@@ -1,7 +1,7 @@
 {
-  "name": "@chris.troutner/npm-lib-boilerplate",
+  "name": "bch-token-sweep",
   "version": "1.0.0",
-  "description": "A boilerplate for creating an npm library with Semantic Release, linting, and tests.",
+  "description": "An npm library for sweeping BCH and SLP Tokens from a paper wallet.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -26,12 +26,15 @@
     "tokens"
   ],
   "author": "Chris Troutner <chris.troutner@gmail.com>",
+  "contributors": [
+    "Andre Cabrera (andrecabrera@protonmail.ch)"
+  ],
   "license": "MIT",
   "apidoc": {
-    "title": "npm-lib-boilerplate",
+    "title": "bch-token-sweep",
     "url": "localhost:5000"
   },
-  "repository": "christroutner/npm-lib-boilerplate",
+  "repository": "Permissionless-Software-Foundation/bch-token-sweep",
   "dependencies": {
     "@psf/bch-js": "^3.5.3",
     "apidoc": "^0.23.0"
