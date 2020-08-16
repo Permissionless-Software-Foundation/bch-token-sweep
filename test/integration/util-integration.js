@@ -4,30 +4,26 @@
 
 // npm libraries
 const chai = require('chai')
-
+const { mockSingleSweepWithBch } = require('../unit/mocks/util-mocks')
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
 // Locally global variables.
 const assert = chai.assert
 
 // Unit under test
 const UtilLib = require('../../lib/util')
-const uut = new UtilLib()
 
 describe('#util.js', () => {
-  describe('#getBchData', () => {
-    it('should get BCH data on an address', async () => {
-      const addr = 'bitcoincash:qp3sn6vlwz28ntmf3wmyra7jqttfx7z6zgtkygjhc7'
-
-      const bchData = await uut.getBchData(addr)
-
-      // Assert that top-level properties exist.
-      assert.property(bchData, 'balance')
-      assert.property(bchData, 'utxos')
-
-      // Assert essential UTXOs properties exist.
-      assert.isArray(bchData.utxos)
-      assert.property(bchData.utxos[0], 'txid')
-      assert.property(bchData.utxos[0], 'vout')
-      assert.property(bchData.utxos[0], 'satoshis')
+  describe('#buildSweepSingleTokenWithBchFromPaper', () => {
+    it('should match the expected hex for sucessful transaction', async () => {
+      const rootSeedPaper = await bchjs.Mnemonic.toSeed(mockSingleSweepWithBch.mnemonic)
+      const masterHDNodePaper = bchjs.HDNode.fromSeed(rootSeedPaper)
+      const accountPaper = bchjs.HDNode.derivePath(masterHDNodePaper, "m/44'/245'/0'")
+      const changePaper = bchjs.HDNode.derivePath(accountPaper, '0/0')
+      const ECPairPaper = bchjs.HDNode.toKeyPair(changePaper)
+      const util = new UtilLib(bchjs, undefined, ECPairPaper, mockSingleSweepWithBch.toCashAddr, mockSingleSweepWithBch.toSlp)
+      const hex = util.buildSweepSingleTokenWithBchFromPaper(mockSingleSweepWithBch.tokenUTXOs, mockSingleSweepWithBch.bchUTXOs)
+      assert.equal(hex, mockSingleSweepWithBch.resultHex)
     })
   })
 })

@@ -37,7 +37,8 @@
   "repository": "Permissionless-Software-Foundation/bch-token-sweep",
   "dependencies": {
     "@psf/bch-js": "^3.5.3",
-    "apidoc": "^0.23.0"
+    "apidoc": "^0.23.0",
+    "bignumber.js": "^9.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
