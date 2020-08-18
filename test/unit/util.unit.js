@@ -1,5 +1,8 @@
 /*
-  Integration tests for the util.js utility library.
+  Unit tests for the util.js utility library.
+
+  TODO: Testing strategy: Start with all the small subfunctions, and work up
+  the complexity until we get to the parent sweepTo() function.
 */
 
 // npm libraries

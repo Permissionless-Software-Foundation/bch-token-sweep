@@ -1,8 +1,3 @@
-/*
-  An npm JavaScript library for front end web apps. Implements a minimal
-  Bitcoin Cash wallet.
-*/
-
 /* eslint-disable no-async-promise-executor */
 /*
 *
@@ -13,6 +8,12 @@ Sweep a private key with a two classes of tokens and some BCH.
 Sweep private key with single token class but multiple UTXOs and multiple BCH-only UTXOs.
 Sweep private key with two token classes and multiple UTXOS of each, and multiple BCH-only UTXOs.
 *
+
+  TODO:
+    - Move all functions other than sweep() to the util library.
+    - The sweep() function should return hex, instead of broadcasting the tx.
+      Broadcasting should be its own function. This will make it easier to write
+      tests.
 */
 
 'use strict'
@@ -66,6 +67,7 @@ class Sweeper {
     }
   }
 
+  // Get's all UTXOs associated with an address.
   async getUtxos (cashAddr) {
     try {
       const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr)
@@ -80,6 +82,8 @@ class Sweeper {
     }
   }
 
+  // Hydrate an array of UTXOs with SLP token data. Returns an object with two
+  // properties: one for token UTXOs and one for BCH UTXOs.
   async filterUtxosByTokenAndBch (utxos) {
     try {
       const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
@@ -94,24 +98,31 @@ class Sweeper {
     }
   }
 
+  // Not sure why this is called 'build'?
+  // TODO: Rename and add a better description of what's happening here.
   async build () {
     try {
+      // Get the balance and UTXOs from the wallet/reciever.
       this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(
         this.CashAddrFromReceiver
       )
+      const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
+      const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(
+        utxosFromReceiver
+      )
+
+      // Get the balance and UTXOs from the paper wallet.
       this.BCHBalanceFromPaperWallet = await this.getBalanceForCashAddr(
         this.CashAddrFromPaperWallet
       )
-      const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
       const utxosFromPaperWallet = await this.getUtxos(
         this.CashAddrFromPaperWallet
-      )
-      const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(
-        utxosFromReceiver
       )
       const filteredUtxosFromPaperWallet = await this.filterUtxosByTokenAndBch(
         utxosFromPaperWallet
       )
+
+      // Set a bunch of values in the instance?
       this.UTXOsFromReceiver = {}
       this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOS
       this.UTXOsFromPaperWallet = {}
@@ -123,15 +134,23 @@ class Sweeper {
     }
   }
 
-  async sweepTo (toSLPAddr, tokenId) {
+  // Sweep a paper wallet. Expects toSLPAddr to be the address to send the tokens
+  // and BCH to.
+  // For now, tokenId can be ignored. Will be used in future functionality.
+  async sweepTo (toSLPAddr, tokenId = true) {
     let txId
+
+    // Single Token
     if (tokenId) {
-      // Single Token
+      //
+      // Sweep with BCH from the wallet, not the paper wallet.
       if (this.utxosFromPaperWallet.bchUTXOs.length === 0) {
-        // Sweep with own BCH
+        // Retrieve *only* the token UTXOs for the selected token.
         const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
           utxo => utxo.tokenId === tokenId
         )
+
+        // Generate a transaction to sweep the selected token from the paper wallet.
         const util = new UtilLib(
           this.bchWrapper,
           this.ECPairFromReceiver,
@@ -143,12 +162,18 @@ class Sweeper {
           tokenUtxos,
           this.UTXOsFromReceiver.bchUTXOs
         )
+
+        // Broadcast the transaction.
         txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
       } else {
-        // Sweep using BCH from paper wallet
+        // Sweep using BCH from the paper wallet to pay TX fees.
+
+        // Retrieve *only* the token UTXOs for the selected token.
         const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
           utxo => utxo.tokenId === tokenId
         )
+
+        // Generate a transaction to sweep the selected token from the paper wallet.
         const util = new UtilLib(
           this.bchWrapper,
           this.ECPairFromReceiver,
@@ -160,10 +185,20 @@ class Sweeper {
           tokenUtxos,
           this.UTXOsFromPaperWallet.bchUTXOs
         )
+
+        // Broadcast the transaction.
         txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
       }
+      //
+
+    /*
+    For now, let's limit the scope to a single token per sweep. We can expand
+    this functionality after we've nailed down the unit tests and functionality
+    for the single-token sweep. Until then, users can simply do multiple sweeps
+    if they have multiple tokens on a single paper wallet.
     } else {
       // Multiple Tokens
+
       const tokenUTXOsById = {}
       this.utxosFromPaperWallet.tokenUTXOs.forEach(tokenUtxo => {
         if (!tokenUTXOsById[tokenUtxo.tokenId]) {
@@ -204,6 +239,7 @@ class Sweeper {
           txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
         }
       }
+    */
     }
     return txId
   }
