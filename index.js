@@ -29,16 +29,28 @@ class Sweeper {
       this.bchWrapper = DEFAULT_BCH_WRAPPER
     }
 
-    if (!WIFFromPaperWallet) { throw new Error('WIF from paper wallet not found') }
+    if (!WIFFromPaperWallet) {
+      throw new Error('WIF from paper wallet not found')
+    }
 
-    if (!WIFFromReceiver) { throw new Error('WIF from receiver not found') }
+    if (!WIFFromReceiver) {
+      throw new Error('WIF from receiver not found')
+    }
 
     this.WIFFromPaperWallet = WIFFromPaperWallet
     this.WIFFromReceiver = WIFFromReceiver
-    this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(this.WIFFromReceiver)
-    this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(this.ECPairFromReceiver)
-    this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(this.WIFFromPaperWallet)
-    this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(this.ECPairFromPaperWallet)
+    this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(
+      this.WIFFromReceiver
+    )
+    this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(
+      this.ECPairFromReceiver
+    )
+    this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(
+      this.WIFFromPaperWallet
+    )
+    this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
+      this.ECPairFromPaperWallet
+    )
   }
 
   async getBalanceForCashAddr (cashAddr) {
@@ -62,13 +74,17 @@ class Sweeper {
       }
       return utxoResponse.utxos
     } catch (e) {
-      throw new Error(`Could not get UTXOs for ${cashAddr}, details: ${e.message}`)
+      throw new Error(
+        `Could not get UTXOs for ${cashAddr}, details: ${e.message}`
+      )
     }
   }
 
   async filterUtxosByTokenAndBch (utxos) {
     try {
-      const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(utxos)
+      const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
+        utxos
+      )
       return {
         tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
         bchUTXOS: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
@@ -80,16 +96,27 @@ class Sweeper {
 
   async build () {
     try {
-      this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(this.CashAddrFromReceiver)
-      this.BCHBalanceFromPaperWallet = await this.getBalanceForCashAddr(this.CashAddrFromPaperWallet)
+      this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(
+        this.CashAddrFromReceiver
+      )
+      this.BCHBalanceFromPaperWallet = await this.getBalanceForCashAddr(
+        this.CashAddrFromPaperWallet
+      )
       const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
-      const utxosFromPaperWallet = await this.getUtxos(this.CashAddrFromPaperWallet)
-      const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(utxosFromReceiver)
-      const filteredUtxosFromPaperWallet = await this.filterUtxosByTokenAndBch(utxosFromPaperWallet)
+      const utxosFromPaperWallet = await this.getUtxos(
+        this.CashAddrFromPaperWallet
+      )
+      const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(
+        utxosFromReceiver
+      )
+      const filteredUtxosFromPaperWallet = await this.filterUtxosByTokenAndBch(
+        utxosFromPaperWallet
+      )
       this.UTXOsFromReceiver = {}
       this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOS
       this.UTXOsFromPaperWallet = {}
-      this.UTXOsFromPaperWallet.tokenUTXOs = filteredUtxosFromPaperWallet.tokenUTXOs
+      this.UTXOsFromPaperWallet.tokenUTXOs =
+        filteredUtxosFromPaperWallet.tokenUTXOs
       this.UTXOsFromPaperWallet.bchUTXOs = filteredUtxosFromPaperWallet.bchUTXOS
     } catch (e) {
       throw new Error(e.message)
@@ -98,19 +125,45 @@ class Sweeper {
 
   async sweepTo (toSLPAddr, tokenId) {
     let txId
-    if (tokenId) { // Single Token
-      if (this.utxosFromPaperWallet.bchUTXOs.length === 0) { // Sweep with own BCH
-        const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(utxo => utxo.tokenId === tokenId)
-        const util = new UtilLib(this.bchWrapper, this.ECPairFromReceiver, this.ECPairFromPaperWallet, this.CashAddrFromReceiver, toSLPAddr)
-        const hex = util.buildSweepSingleTokenWithoutBchFromPaper(tokenUtxos, this.UTXOsFromReceiver.bchUTXOs)
+    if (tokenId) {
+      // Single Token
+      if (this.utxosFromPaperWallet.bchUTXOs.length === 0) {
+        // Sweep with own BCH
+        const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
+          utxo => utxo.tokenId === tokenId
+        )
+        const util = new UtilLib(
+          this.bchWrapper,
+          this.ECPairFromReceiver,
+          this.ECPairFromPaperWallet,
+          this.CashAddrFromReceiver,
+          toSLPAddr
+        )
+        const hex = util.buildSweepSingleTokenWithoutBchFromPaper(
+          tokenUtxos,
+          this.UTXOsFromReceiver.bchUTXOs
+        )
         txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
-      } else { // Sweep using BCH from paper wallet
-        const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(utxo => utxo.tokenId === tokenId)
-        const util = new UtilLib(this.bchWrapper, this.ECPairFromReceiver, this.ECPairFromPaperWallet, this.CashAddrFromReceiver, toSLPAddr)
-        const hex = util.buildSweepSingleTokenWithBchFromPaper(tokenUtxos, this.UTXOsFromPaperWallet.bchUTXOs)
+      } else {
+        // Sweep using BCH from paper wallet
+        const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
+          utxo => utxo.tokenId === tokenId
+        )
+        const util = new UtilLib(
+          this.bchWrapper,
+          this.ECPairFromReceiver,
+          this.ECPairFromPaperWallet,
+          this.CashAddrFromReceiver,
+          toSLPAddr
+        )
+        const hex = util.buildSweepSingleTokenWithBchFromPaper(
+          tokenUtxos,
+          this.UTXOsFromPaperWallet.bchUTXOs
+        )
         txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
       }
-    } else { // Multiple Tokens
+    } else {
+      // Multiple Tokens
       const tokenUTXOsById = {}
       this.utxosFromPaperWallet.tokenUTXOs.forEach(tokenUtxo => {
         if (!tokenUTXOsById[tokenUtxo.tokenId]) {
@@ -118,17 +171,36 @@ class Sweeper {
         }
         tokenUTXOsById[tokenUtxo.tokenId].push(tokenUtxo)
       })
-      if (this.utxosFromPaperWallet.bchUTXOs.length === 0) { // Sweep with own BCH
+      if (this.utxosFromPaperWallet.bchUTXOs.length === 0) {
+        // Sweep with own BCH
         for (const tokenUtxos of tokenUTXOsById) {
-          const util = new UtilLib(this.bchWrapper, this.ECPairFromReceiver, this.ECPairFromPaperWallet, this.CashAddrFromReceiver, toSLPAddr)
-          const hex = util.buildSweepSingleTokenWithoutBchFromPaper(tokenUtxos, this.UTXOsFromReceiver.bchUTXOs)
+          const util = new UtilLib(
+            this.bchWrapper,
+            this.ECPairFromReceiver,
+            this.ECPairFromPaperWallet,
+            this.CashAddrFromReceiver,
+            toSLPAddr
+          )
+          const hex = util.buildSweepSingleTokenWithoutBchFromPaper(
+            tokenUtxos,
+            this.UTXOsFromReceiver.bchUTXOs
+          )
           txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
-
         }
-      } else { // Sweep using the paper wallet BCH
+      } else {
+        // Sweep using the paper wallet BCH
         for (const tokenUtxos of tokenUTXOsById) {
-          const util = new UtilLib(this.bchWrapper, this.ECPairFromPaperWallet, this.ECPairFromPaperWallet, this.CashAddrFromReceiver, toSLPAddr)
-          const hex = util.buildSweepSingleTokenWithoutBchFromPaper(tokenUtxos, this.UTXOsFromPaperWallet.bchUTXOs)
+          const util = new UtilLib(
+            this.bchWrapper,
+            this.ECPairFromPaperWallet,
+            this.ECPairFromPaperWallet,
+            this.CashAddrFromReceiver,
+            toSLPAddr
+          )
+          const hex = util.buildSweepSingleTokenWithoutBchFromPaper(
+            tokenUtxos,
+            this.UTXOsFromPaperWallet.bchUTXOs
+          )
           txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
         }
       }
