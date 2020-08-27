@@ -16,129 +16,129 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
       tests.
 */
 
-'use strict'
+"use strict";
 
-const BCHJS = require('@psf/bch-js')
-const UtilLib = require('./lib/util')
-const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
-const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
+const BCHJS = require("@psf/bch-js");
+const UtilLib = require("./lib/util");
+const FULLSTACK_MAINNET_API_FREE = "https://free-main.fullstack.cash/v3/";
+const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE });
 
 class Sweeper {
-  constructor (WIFFromPaperWallet, WIFFromReceiver, BCHWrapper) {
-    this.bchWrapper = BCHWrapper
+  constructor(WIFFromPaperWallet, WIFFromReceiver, BCHWrapper) {
+    this.bchWrapper = BCHWrapper;
     if (!BCHWrapper) {
-      this.bchWrapper = DEFAULT_BCH_WRAPPER
+      this.bchWrapper = DEFAULT_BCH_WRAPPER;
     }
 
     if (!WIFFromPaperWallet) {
-      throw new Error('WIF from paper wallet not found')
+      throw new Error("WIF from paper wallet not found");
     }
 
     if (!WIFFromReceiver) {
-      throw new Error('WIF from receiver not found')
+      throw new Error("WIF from receiver not found");
     }
 
-    this.WIFFromPaperWallet = WIFFromPaperWallet
-    this.WIFFromReceiver = WIFFromReceiver
+    this.WIFFromPaperWallet = WIFFromPaperWallet;
+    this.WIFFromReceiver = WIFFromReceiver;
     this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(
       this.WIFFromReceiver
-    )
+    );
     this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(
       this.ECPairFromReceiver
-    )
+    );
     this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(
       this.WIFFromPaperWallet
-    )
+    );
     this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
       this.ECPairFromPaperWallet
-    )
+    );
   }
 
-  async getBalanceForCashAddr (cashAddr) {
+  async getBalanceForCashAddr(cashAddr) {
     try {
-      const balanceResult = await this.bchWrapper.Electrumx.balance(cashAddr)
+      const balanceResult = await this.bchWrapper.Electrumx.balance(cashAddr);
       if (balanceResult.success) {
-        return balanceResult.confirmed + balanceResult.unconfirmed
+        return balanceResult.confirmed + balanceResult.unconfirmed;
       } else {
-        throw new Error('Error fetching balance from API')
+        throw new Error("Error fetching balance from API");
       }
     } catch (e) {
-      throw new Error(`Could not get balance for ${cashAddr}`)
+      throw new Error(`Could not get balance for ${cashAddr}`);
     }
   }
 
   // Get's all UTXOs associated with an address.
-  async getUtxos (cashAddr) {
+  async getUtxos(cashAddr) {
     try {
-      const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr)
+      const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr);
       if (!utxoResponse.success) {
-        throw new Error('Error fetching UTXOs from Electrumx')
+        throw new Error("Error fetching UTXOs from Electrumx");
       }
-      return utxoResponse.utxos
+      return utxoResponse.utxos;
     } catch (e) {
       throw new Error(
         `Could not get UTXOs for ${cashAddr}, details: ${e.message}`
-      )
+      );
     }
   }
 
   // Hydrate an array of UTXOs with SLP token data. Returns an object with two
   // properties: one for token UTXOs and one for BCH UTXOs.
-  async filterUtxosByTokenAndBch (utxos) {
+  async filterUtxosByTokenAndBch(utxos) {
     try {
       const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
         utxos
-      )
+      );
       return {
-        tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
-        bchUTXOS: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
-      }
+        tokenUTXOs: utxosWithTokenDetails.filter((utxo) => utxo.isValid),
+        bchUTXOS: utxosWithTokenDetails.filter((utxo) => !utxo.isValid),
+      };
     } catch (e) {
-      throw new Error(`Could not get details of UTXOs, details: ${e.message}`)
+      throw new Error(`Could not get details of UTXOs, details: ${e.message}`);
     }
   }
 
-  // Not sure why this is called 'build'?
-  // TODO: Rename and add a better description of what's happening here.
-  async build () {
+  // Constructors are not able to make async calls, therefore we need this function in order to finish populating the object.
+  async populateObjectFromNetwork() {
     try {
       // Get the balance and UTXOs from the wallet/reciever.
       this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(
         this.CashAddrFromReceiver
-      )
-      const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
+      );
+      const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver);
       const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(
         utxosFromReceiver
-      )
+      );
 
       // Get the balance and UTXOs from the paper wallet.
       this.BCHBalanceFromPaperWallet = await this.getBalanceForCashAddr(
         this.CashAddrFromPaperWallet
-      )
+      );
       const utxosFromPaperWallet = await this.getUtxos(
         this.CashAddrFromPaperWallet
-      )
+      );
       const filteredUtxosFromPaperWallet = await this.filterUtxosByTokenAndBch(
         utxosFromPaperWallet
-      )
+      );
 
       // Set a bunch of values in the instance?
-      this.UTXOsFromReceiver = {}
-      this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOS
-      this.UTXOsFromPaperWallet = {}
+      this.UTXOsFromReceiver = {};
+      this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOS;
+      this.UTXOsFromPaperWallet = {};
       this.UTXOsFromPaperWallet.tokenUTXOs =
-        filteredUtxosFromPaperWallet.tokenUTXOs
-      this.UTXOsFromPaperWallet.bchUTXOs = filteredUtxosFromPaperWallet.bchUTXOS
+        filteredUtxosFromPaperWallet.tokenUTXOs;
+      this.UTXOsFromPaperWallet.bchUTXOs =
+        filteredUtxosFromPaperWallet.bchUTXOS;
     } catch (e) {
-      throw new Error(e.message)
+      throw new Error(e.message);
     }
   }
 
   // Sweep a paper wallet. Expects toSLPAddr to be the address to send the tokens
   // and BCH to.
   // For now, tokenId can be ignored. Will be used in future functionality.
-  async sweepTo (toSLPAddr, tokenId = true) {
-    let txId
+  async sweepTo(toSLPAddr, tokenId = true) {
+    let txId;
 
     // Single Token
     if (tokenId) {
@@ -147,8 +147,8 @@ class Sweeper {
       if (this.utxosFromPaperWallet.bchUTXOs.length === 0) {
         // Retrieve *only* the token UTXOs for the selected token.
         const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
-          utxo => utxo.tokenId === tokenId
-        )
+          (utxo) => utxo.tokenId === tokenId
+        );
 
         // Generate a transaction to sweep the selected token from the paper wallet.
         const util = new UtilLib(
@@ -157,21 +157,21 @@ class Sweeper {
           this.ECPairFromPaperWallet,
           this.CashAddrFromReceiver,
           toSLPAddr
-        )
+        );
         const hex = util.buildSweepSingleTokenWithoutBchFromPaper(
           tokenUtxos,
           this.UTXOsFromReceiver.bchUTXOs
-        )
+        );
 
         // Broadcast the transaction.
-        txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
+        txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex);
       } else {
         // Sweep using BCH from the paper wallet to pay TX fees.
 
         // Retrieve *only* the token UTXOs for the selected token.
         const tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
-          utxo => utxo.tokenId === tokenId
-        )
+          (utxo) => utxo.tokenId === tokenId
+        );
 
         // Generate a transaction to sweep the selected token from the paper wallet.
         const util = new UtilLib(
@@ -180,18 +180,19 @@ class Sweeper {
           this.ECPairFromPaperWallet,
           this.CashAddrFromReceiver,
           toSLPAddr
-        )
+        );
         const hex = util.buildSweepSingleTokenWithBchFromPaper(
           tokenUtxos,
           this.UTXOsFromPaperWallet.bchUTXOs
-        )
+        );
 
         // Broadcast the transaction.
-        txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
+        txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex);
       }
+
       //
 
-    /*
+      /*
     For now, let's limit the scope to a single token per sweep. We can expand
     this functionality after we've nailed down the unit tests and functionality
     for the single-token sweep. Until then, users can simply do multiple sweeps
@@ -241,7 +242,13 @@ class Sweeper {
       }
     */
     }
-    return txId
+
+    return hex;
+  }
+
+  async broadcast(hex) {
+    const txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex);
+    return txId;
   }
 }
 
@@ -268,4 +275,4 @@ class Sweeper {
 //   await slpSweeper.sweepTo('simpleledger:qrpsz38l2lz3n6d4vk2rqp23qzymlngcrcw2lavrfv', '716daf7baf2f1c517e52a3f6ffd6f734d45eab20e87dc1c79108c5f0f6804888')
 // })()
 
-module.exports = Sweeper
+module.exports = Sweeper;
