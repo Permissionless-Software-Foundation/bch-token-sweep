@@ -2,7 +2,7 @@
   "name": "bch-token-sweep",
   "version": "1.0.0",
   "description": "An npm library for sweeping BCH and SLP Tokens from a paper wallet.",
-  "main": "index.js",
+  "main": "dist/bch-token-sweep.min.js",
   "scripts": {
     "start": "node index.js",
     "test": "npm run lint && TEST=unit nyc mocha test/unit/",
@@ -10,7 +10,8 @@
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "nyc --reporter=html mocha test/unit/ --exit"
+    "coverage:report": "nyc --reporter=html mocha test/unit/ --exit",
+    "build": "browserify index.js -p tinyify --s Sweep -o dist/bch-token-sweep.min.js"
   },
   "keywords": [
     "bitcoin",
@@ -27,7 +28,8 @@
   ],
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "contributors": [
-    "Andre Cabrera (andrecabrera@protonmail.ch)"
+    "Andre Cabrera (andrecabrera@protonmail.ch)",
+    "Daniel Gonzalez <danielhumgon@gmail.com>"
   ],
   "license": "MIT",
   "apidoc": {
