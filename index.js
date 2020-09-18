@@ -164,7 +164,7 @@ class Sweeper {
             tokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs
           }
 
-          // Generate a transaction to sweep the selected token from the paper wallet. 
+          // Generate a transaction to sweep the selected token from the paper wallet.
           const util = new UtilLib(
             this.bchWrapper,
             this.ECPairFromReceiver,
