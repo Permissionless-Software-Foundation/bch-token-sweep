@@ -85,6 +85,7 @@ describe('#index.js', () => {
       const transactionHex = await uut.sweepTo(receiverSlpAddress)
       // console.log('transactionHex: ', transactionHex)
 
+      // The function should return a hex encoded string representing a transaction.
       assert.isString(transactionHex)
     })
   })
