@@ -34,6 +34,7 @@ class Sweeper {
       throw new Error('WIF from paper wallet not found')
     }
 
+    // ToDo: A WIF from the reciever should not be required in all use cases.
     if (!WIFFromReceiver) {
       throw new Error('WIF from receiver not found')
     }
@@ -93,7 +94,7 @@ class Sweeper {
       )
       return {
         tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
-        bchUTXOS: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
+        bchUTXOs: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
       }
     } catch (e) {
       throw new Error(`Could not get details of UTXOs, details: ${e.message}`)
@@ -102,9 +103,11 @@ class Sweeper {
 
   // Constructors are not able to make async calls, therefore we need this
   // function in order to finish populating the object.
+  // This function retrieves UTXO and balance data from an indexer for the
+  // paper wallet and reciever wallet.
   async populateObjectFromNetwork () {
     try {
-      // Get the balance and UTXOs from the wallet/reciever.
+      // Get the balance and UTXOs from the reciever wallet.
       this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(
         this.CashAddrFromReceiver
       )
@@ -126,13 +129,15 @@ class Sweeper {
 
       // Set a bunch of values in the instance?
       this.UTXOsFromReceiver = {}
-      this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOS
+      this.UTXOsFromReceiver.bchUTXOs = filteredUtxosFromReceiver.bchUTXOs
       this.UTXOsFromPaperWallet = {}
       this.UTXOsFromPaperWallet.tokenUTXOs =
         filteredUtxosFromPaperWallet.tokenUTXOs
-      this.UTXOsFromPaperWallet.bchUTXOs = filteredUtxosFromPaperWallet.bchUTXOS
+      this.UTXOsFromPaperWallet.bchUTXOs = filteredUtxosFromPaperWallet.bchUTXOs
     } catch (e) {
-      throw new Error(e.message)
+      console.error('Error in populateObjectFromNetwork()')
+      // throw new Error(e.message)
+      throw e
     }
   }
 
