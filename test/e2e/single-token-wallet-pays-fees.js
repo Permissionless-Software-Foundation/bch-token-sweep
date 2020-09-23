@@ -1,5 +1,5 @@
 /*
-  Integration tests for the util.js utility library.
+  E2E test for sweeping a single token and paying for tx fees with the recieving wallet.
 */
 
 // npm libraries

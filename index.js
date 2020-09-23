@@ -34,6 +34,7 @@ class Sweeper {
       throw new Error('WIF from paper wallet not found')
     }
 
+    // ToDo: A WIF from the reciever should not be required in all use cases.
     if (!WIFFromReceiver) {
       throw new Error('WIF from receiver not found')
     }
