@@ -10,17 +10,19 @@ const sinon = require('sinon')
 const SweeperLib = require('../../index.js')
 const mockData = require('./mocks/bch-token-sweep-mocks.js')
 
+let sandbox
+let uut
+
 describe('#index.js', () => {
   // Wallets used for testing.
   const receiverWIF = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
   const receiverCashAddr =
     'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+  const receiverSlpAddress =
+    'simpleledger: qz726wyev5tk9d6vm23d5m4mrg92w4ke75pna6xe5v'
 
   const paperWIF = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
   const paperCashAddr = 'bitcoincash:qzzdt404ypq8hmrgctca8qm80u44k5fn3u5fzq6wft'
-
-  let uut
-  let sandbox
 
   // Restore the sandbox before each test.
   beforeEach(() => {
@@ -47,34 +49,12 @@ describe('#index.js', () => {
   describe('#populateObjectFromNetwork', () => {
     it('should populate the instance with UTXO data', async () => {
       // Mock the function that make network calls.
-      sandbox
-        .stub(uut, 'getBalanceForCashAddr')
-        // The reciever wallet.
-        .onCall(0)
-        .resolves(10000)
-        // The paper wallet.
-        .onCall(1)
-        .resolves(546)
-      sandbox
-        .stub(uut, 'getUtxos')
-        // The reciever wallet.
-        .onCall(0)
-        .resolves(mockData.utxosFromReceiver)
-        // The paper wallet.
-        .onCall(1)
-        .resolves(mockData.utxosFromPaperWallet)
-      sandbox
-        .stub(uut, 'filterUtxosByTokenAndBch')
-        // The reciever wallet.
-        .onCall(0)
-        .resolves(mockData.filteredUtxosFromReceiver)
-        // The paper wallet.
-        .onCall(1)
-        .resolves(mockData.filteredUtxosFromPaperWallet)
+      mockUtxos()
 
       await uut.populateObjectFromNetwork()
       // console.log('uut: ', uut)
 
+      // Assert that the instance has the balance and utxo information.
       assert.equal(uut.BCHBalanceFromReceiver, 10000)
       assert.equal(uut.BCHBalanceFromPaperWallet, 546)
 
@@ -92,4 +72,48 @@ describe('#index.js', () => {
       )
     })
   })
+
+  describe('#sweepTo', () => {
+    it('should return a hex transaction for sweeping tokens when paper wallet has no BCH', async () => {
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      // Constructing the sweep transaction
+      const transactionHex = await uut.sweepTo(receiverSlpAddress)
+      // console.log('transactionHex: ', transactionHex)
+
+      assert.isString(transactionHex)
+    })
+  })
 })
+
+// Mocks the UTXOs for different tests.
+function mockUtxos () {
+  sandbox
+    .stub(uut, 'getBalanceForCashAddr')
+    // The reciever wallet.
+    .onCall(0)
+    .resolves(10000)
+    // The paper wallet.
+    .onCall(1)
+    .resolves(546)
+  sandbox
+    .stub(uut, 'getUtxos')
+    // The reciever wallet.
+    .onCall(0)
+    .resolves(mockData.utxosFromReceiver)
+    // The paper wallet.
+    .onCall(1)
+    .resolves(mockData.utxosFromPaperWallet)
+  sandbox
+    .stub(uut, 'filterUtxosByTokenAndBch')
+    // The reciever wallet.
+    .onCall(0)
+    .resolves(mockData.filteredUtxosFromReceiver)
+    // The paper wallet.
+    .onCall(1)
+    .resolves(mockData.filteredUtxosFromPaperWallet)
+}
