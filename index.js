@@ -223,10 +223,16 @@ class Sweeper {
             toSLPAddr
           )
 
-          hex = util.buildSweepSingleTokenWithBchFromPaper(
-            tokenUtxos,
-            this.UTXOsFromPaperWallet.bchUTXOs
-          )
+          if (tokenUtxos.length) {
+            hex = util.buildSweepSingleTokenWithBchFromPaper(
+              tokenUtxos,
+              this.UTXOsFromPaperWallet.bchUTXOs
+            )
+          } else {
+            hex = util.buildSweepOnlyBchFromPaper(
+              this.UTXOsFromPaperWallet.bchUTXOs
+            )
+          }
 
           // Broadcast the transaction.
           // txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
