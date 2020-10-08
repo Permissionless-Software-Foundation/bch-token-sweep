@@ -160,6 +160,10 @@ class Sweeper {
             'No BCH found on paper wallet. Sweeping with BCH from the reciever wallet.'
           )
 
+          if (this.UTXOsFromPaperWallet.tokenUTXOs.length === 0) {
+            throw new Error('No token UTXOs found on paper wallet')
+          }
+
           // If no tokenId is been introduced as a parameter,
           // it will use all the tokens for the sweep
           // being that the tokenId parameter is true by default
