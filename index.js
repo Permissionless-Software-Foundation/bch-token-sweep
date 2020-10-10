@@ -18,8 +18,14 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 
 'use strict'
 
+// Public npm libraries
 const BCHJS = require('@psf/bch-js')
+
+// Local libraries
 const UtilLib = require('./lib/util')
+const Split = require('./lib/split')
+
+// Constants
 const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
 const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
@@ -53,6 +59,9 @@ class Sweeper {
     this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
       this.ECPairFromPaperWallet
     )
+
+    // Add the splitting library.
+    this.split = new Split()
   }
 
   // Constructors are not able to make async calls, therefore we need this
