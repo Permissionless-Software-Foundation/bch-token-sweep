@@ -55,52 +55,6 @@ class Sweeper {
     )
   }
 
-  async getBalanceForCashAddr (cashAddr) {
-    try {
-      const balanceResult = await this.bchWrapper.Electrumx.balance(cashAddr)
-      if (balanceResult.success) {
-        return (
-          balanceResult.balance.confirmed + balanceResult.balance.unconfirmed
-        )
-      } else {
-        throw new Error('Error fetching balance from API')
-      }
-    } catch (e) {
-      throw new Error(`Could not get balance for ${cashAddr}`)
-    }
-  }
-
-  // Get's all UTXOs associated with an address.
-  async getUtxos (cashAddr) {
-    try {
-      const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr)
-      if (!utxoResponse.success) {
-        throw new Error('Error fetching UTXOs from Electrumx')
-      }
-      return utxoResponse.utxos
-    } catch (e) {
-      throw new Error(
-        `Could not get UTXOs for ${cashAddr}, details: ${e.message}`
-      )
-    }
-  }
-
-  // Hydrate an array of UTXOs with SLP token data. Returns an object with two
-  // properties: one for token UTXOs and one for BCH UTXOs.
-  async filterUtxosByTokenAndBch (utxos) {
-    try {
-      const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
-        utxos
-      )
-      return {
-        tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
-        bchUTXOs: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
-      }
-    } catch (e) {
-      throw new Error(`Could not get details of UTXOs, details: ${e.message}`)
-    }
-  }
-
   // Constructors are not able to make async calls, therefore we need this
   // function in order to finish populating the object.
   // This function retrieves UTXO and balance data from an indexer for the
@@ -299,6 +253,52 @@ class Sweeper {
     } catch (error) {
       console.error('Error in sweepTo()')
       throw error
+    }
+  }
+
+  async getBalanceForCashAddr (cashAddr) {
+    try {
+      const balanceResult = await this.bchWrapper.Electrumx.balance(cashAddr)
+      if (balanceResult.success) {
+        return (
+          balanceResult.balance.confirmed + balanceResult.balance.unconfirmed
+        )
+      } else {
+        throw new Error('Error fetching balance from API')
+      }
+    } catch (e) {
+      throw new Error(`Could not get balance for ${cashAddr}`)
+    }
+  }
+
+  // Get's all UTXOs associated with an address.
+  async getUtxos (cashAddr) {
+    try {
+      const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr)
+      if (!utxoResponse.success) {
+        throw new Error('Error fetching UTXOs from Electrumx')
+      }
+      return utxoResponse.utxos
+    } catch (e) {
+      throw new Error(
+        `Could not get UTXOs for ${cashAddr}, details: ${e.message}`
+      )
+    }
+  }
+
+  // Hydrate an array of UTXOs with SLP token data. Returns an object with two
+  // properties: one for token UTXOs and one for BCH UTXOs.
+  async filterUtxosByTokenAndBch (utxos) {
+    try {
+      const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
+        utxos
+      )
+      return {
+        tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
+        bchUTXOs: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
+      }
+    } catch (e) {
+      throw new Error(`Could not get details of UTXOs, details: ${e.message}`)
     }
   }
 
