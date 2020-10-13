@@ -132,4 +132,17 @@ describe('#blockchain', () => {
       }
     })
   })
+
+  describe('#broadcast', () => {
+    it('should return a txid', async () => {
+      // Mock live network calls.
+      sandbox
+        .stub(uut.bchjs.RawTransactions, 'sendRawTransaction')
+        .resolves('txid')
+
+      const result = await uut.broadcast('mock hex')
+
+      assert.equal(result, 'txid')
+    })
+  })
 })

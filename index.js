@@ -80,19 +80,21 @@ class Sweeper {
       this.BCHBalanceFromReceiver = await this.blockchain.getBalanceForCashAddr(
         this.CashAddrFromReceiver
       )
-      const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
-      const filteredUtxosFromReceiver = await this.filterUtxosByTokenAndBch(
+      const utxosFromReceiver = await this.blockchain.getUtxos(
+        this.CashAddrFromReceiver
+      )
+      const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch(
         utxosFromReceiver
       )
 
       // Get the balance and UTXOs from the paper wallet.
-      this.BCHBalanceFromPaperWallet = await this.getBalanceForCashAddr(
+      this.BCHBalanceFromPaperWallet = await this.blockchain.getBalanceForCashAddr(
         this.CashAddrFromPaperWallet
       )
-      const utxosFromPaperWallet = await this.getUtxos(
+      const utxosFromPaperWallet = await this.blockchain.getUtxos(
         this.CashAddrFromPaperWallet
       )
-      const filteredUtxosFromPaperWallet = await this.filterUtxosByTokenAndBch(
+      const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch(
         utxosFromPaperWallet
       )
 
@@ -269,11 +271,6 @@ class Sweeper {
       console.error('Error in sweepTo()')
       throw error
     }
-  }
-
-  async broadcast (hex) {
-    const txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
-    return txId
   }
 }
 
