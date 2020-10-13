@@ -24,4 +24,15 @@ describe('#blockchain', () => {
       assert.isNumber(result)
     })
   })
+
+  describe('#getUtxos', () => {
+    it('should get utxos for an address', async () => {
+      const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+
+      const result = await uut.getUtxos(addr)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      // assert.isNumber(result)
+    })
+  })
 })

@@ -60,9 +60,7 @@ describe('#blockchain', () => {
     it('should handle and throw an error', async () => {
       try {
         // Force an error.
-        sandbox
-          .stub(uut.bchjs.Electrumx, 'balance')
-          .rejects('test error')
+        sandbox.stub(uut.bchjs.Electrumx, 'balance').rejects('test error')
 
         const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
 
@@ -70,7 +68,40 @@ describe('#blockchain', () => {
 
         assert.equal(true, false, 'Unexpected result')
       } catch (err) {
-        assert.include(err.message, 'test error')
+        assert.include(err.message, 'Could not get balance for')
+      }
+    })
+  })
+
+  describe('#getUtxos', () => {
+    it('should get utxos for an address', async () => {
+      // Mock live network calls.
+      sandbox
+        .stub(uut.bchjs.Electrumx, 'utxo')
+        .resolves({ utxos: mockData.mockUtxos })
+
+      const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+
+      const result = await uut.getUtxos(addr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+    })
+
+    it('should handle and throw an error', async () => {
+      try {
+        // Force an error.
+        sandbox
+          .stub(uut.bchjs.Electrumx, 'utxo')
+          .rejects('test error')
+
+        const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+
+        await uut.getUtxos(addr)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'Could not get UTXOs')
       }
     })
   })

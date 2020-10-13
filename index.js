@@ -271,21 +271,6 @@ class Sweeper {
     }
   }
 
-  // Get's all UTXOs associated with an address.
-  async getUtxos (cashAddr) {
-    try {
-      const utxoResponse = await this.bchWrapper.Electrumx.utxo(cashAddr)
-      if (!utxoResponse.success) {
-        throw new Error('Error fetching UTXOs from Electrumx')
-      }
-      return utxoResponse.utxos
-    } catch (e) {
-      throw new Error(
-        `Could not get UTXOs for ${cashAddr}, details: ${e.message}`
-      )
-    }
-  }
-
   // Hydrate an array of UTXOs with SLP token data. Returns an object with two
   // properties: one for token UTXOs and one for BCH UTXOs.
   async filterUtxosByTokenAndBch (utxos) {
