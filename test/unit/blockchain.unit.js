@@ -145,4 +145,18 @@ describe('#blockchain', () => {
       assert.equal(result, 'txid')
     })
   })
+
+  describe('#expandWif', () => {
+    it('should expand a WIF', () => {
+      const wif = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
+
+      const result = uut.expandWif(wif)
+      // console.log('result: ', result)
+
+      assert.property(result, 'wif')
+      assert.property(result, 'ecPair')
+      assert.property(result, 'bchAddr')
+      assert.property(result, 'slpAddr')
+    })
+  })
 })

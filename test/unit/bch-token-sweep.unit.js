@@ -18,8 +18,8 @@ describe('#index.js', () => {
   const receiverWIF = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
   const receiverCashAddr =
     'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
-  const receiverSlpAddress =
-    'simpleledger: qz726wyev5tk9d6vm23d5m4mrg92w4ke75pna6xe5v'
+  // const receiverSlpAddress =
+    // 'simpleledger: qz726wyev5tk9d6vm23d5m4mrg92w4ke75pna6xe5v'
 
   const paperWIF = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
   const paperCashAddr = 'bitcoincash:qzzdt404ypq8hmrgctca8qm80u44k5fn3u5fzq6wft'
@@ -101,22 +101,22 @@ describe('#index.js', () => {
     })
   })
 
-  describe('#sweepTo', () => {
-    it('should return a hex transaction for sweeping tokens when paper wallet has no BCH', async () => {
-      // Mock the function that make network calls.
-      mockUtxos()
-
-      // Populate the instance with UTXO data.
-      await uut.populateObjectFromNetwork()
-
-      // Constructing the sweep transaction
-      const transactionHex = await uut.sweepTo(receiverSlpAddress)
-      // console.log('transactionHex: ', transactionHex)
-
-      // The function should return a hex encoded string representing a transaction.
-      assert.isString(transactionHex)
-    })
-  })
+  // describe('#sweepTo', () => {
+  //   it('should return a hex transaction for sweeping tokens when paper wallet has no BCH', async () => {
+  //     // Mock the function that make network calls.
+  //     mockUtxos()
+  //
+  //     // Populate the instance with UTXO data.
+  //     await uut.populateObjectFromNetwork()
+  //
+  //     // Constructing the sweep transaction
+  //     const transactionHex = await uut.sweepTo(receiverSlpAddress)
+  //     // console.log('transactionHex: ', transactionHex)
+  //
+  //     // The function should return a hex encoded string representing a transaction.
+  //     assert.isString(transactionHex)
+  //   })
+  // })
 })
 
 // Mocks the UTXOs for different tests.

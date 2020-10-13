@@ -22,7 +22,7 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 const BCHJS = require('@psf/bch-js')
 
 // Local libraries
-const UtilLib = require('./lib/util')
+const TransactionLib = require('./lib/transactions')
 const Split = require('./lib/split')
 const Blockchain = require('./lib/blockchain')
 
@@ -152,7 +152,7 @@ class Sweeper {
           // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
           // Generate a transaction to sweep the selected token from the paper wallet.
-          const util = new UtilLib(
+          const util = new TransactionLib(
             this.bchWrapper,
             this.ECPairFromReceiver,
             this.ECPairFromPaperWallet,
@@ -190,7 +190,7 @@ class Sweeper {
           }
 
           // Generate a transaction to sweep the selected token from the paper wallet.
-          const util = new UtilLib(
+          const util = new TransactionLib(
             this.bchWrapper,
             this.ECPairFromReceiver,
             this.ECPairFromPaperWallet,
