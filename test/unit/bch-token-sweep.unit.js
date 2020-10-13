@@ -73,6 +73,34 @@ describe('#index.js', () => {
     })
   })
 
+  describe('#populateObjectFromNetwork', () => {
+    it('should populate the Class instance with data from the blockchain', async () => {
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      assert.equal(true, true, 'Not throwing an error is a success.')
+    })
+
+    it('should handle and throw an error', async () => {
+      try {
+        sandbox
+          .stub(uut.blockchain, 'getBalanceForCashAddr')
+          .rejects(new Error('test error'))
+
+        // Populate the instance with UTXO data.
+        await uut.populateObjectFromNetwork()
+
+        assert.equal(true, false, 'Unexpect result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'test error')
+      }
+    })
+  })
+
   describe('#sweepTo', () => {
     it('should return a hex transaction for sweeping tokens when paper wallet has no BCH', async () => {
       // Mock the function that make network calls.

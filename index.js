@@ -24,6 +24,7 @@ const BCHJS = require('@psf/bch-js')
 // Local libraries
 const UtilLib = require('./lib/util')
 const Split = require('./lib/split')
+const Blockchain = require('./lib/blockchain')
 
 // Constants
 const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
@@ -31,16 +32,20 @@ const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
 class Sweeper {
   constructor (WIFFromPaperWallet, WIFFromReceiver, BCHWrapper) {
+    // This is an instance of bch-js. It will default to its own instance if one
+    // is not provided.
     this.bchWrapper = BCHWrapper
     if (!BCHWrapper) {
       this.bchWrapper = DEFAULT_BCH_WRAPPER
     }
 
+    // Private key contained on the paper wallet.
     if (!WIFFromPaperWallet) {
       throw new Error('WIF from paper wallet not found')
     }
 
     // ToDo: A WIF from the reciever should not be required in all use cases.
+    // If there is BCH on the paper wallet, it can be used to pay transaction fees.
     if (!WIFFromReceiver) {
       throw new Error('WIF from receiver not found')
     }
@@ -62,6 +67,7 @@ class Sweeper {
 
     // Add the splitting library.
     this.split = new Split()
+    this.blockchain = new Blockchain()
   }
 
   // Constructors are not able to make async calls, therefore we need this
@@ -71,7 +77,7 @@ class Sweeper {
   async populateObjectFromNetwork () {
     try {
       // Get the balance and UTXOs from the reciever wallet.
-      this.BCHBalanceFromReceiver = await this.getBalanceForCashAddr(
+      this.BCHBalanceFromReceiver = await this.blockchain.getBalanceForCashAddr(
         this.CashAddrFromReceiver
       )
       const utxosFromReceiver = await this.getUtxos(this.CashAddrFromReceiver)
@@ -262,21 +268,6 @@ class Sweeper {
     } catch (error) {
       console.error('Error in sweepTo()')
       throw error
-    }
-  }
-
-  async getBalanceForCashAddr (cashAddr) {
-    try {
-      const balanceResult = await this.bchWrapper.Electrumx.balance(cashAddr)
-      if (balanceResult.success) {
-        return (
-          balanceResult.balance.confirmed + balanceResult.balance.unconfirmed
-        )
-      } else {
-        throw new Error('Error fetching balance from API')
-      }
-    } catch (e) {
-      throw new Error(`Could not get balance for ${cashAddr}`)
     }
   }
 
