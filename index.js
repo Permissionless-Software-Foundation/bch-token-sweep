@@ -271,22 +271,6 @@ class Sweeper {
     }
   }
 
-  // Hydrate an array of UTXOs with SLP token data. Returns an object with two
-  // properties: one for token UTXOs and one for BCH UTXOs.
-  async filterUtxosByTokenAndBch (utxos) {
-    try {
-      const utxosWithTokenDetails = await this.bchWrapper.SLP.Utils.tokenUtxoDetails(
-        utxos
-      )
-      return {
-        tokenUTXOs: utxosWithTokenDetails.filter(utxo => utxo.isValid),
-        bchUTXOs: utxosWithTokenDetails.filter(utxo => !utxo.isValid)
-      }
-    } catch (e) {
-      throw new Error(`Could not get details of UTXOs, details: ${e.message}`)
-    }
-  }
-
   async broadcast (hex) {
     const txId = await this.bchWrapper.RawTransactions.sendRawTransaction(hex)
     return txId

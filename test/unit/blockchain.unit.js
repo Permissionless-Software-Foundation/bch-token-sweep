@@ -91,9 +91,7 @@ describe('#blockchain', () => {
     it('should handle and throw an error', async () => {
       try {
         // Force an error.
-        sandbox
-          .stub(uut.bchjs.Electrumx, 'utxo')
-          .rejects('test error')
+        sandbox.stub(uut.bchjs.Electrumx, 'utxo').rejects('test error')
 
         const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
 
@@ -102,6 +100,35 @@ describe('#blockchain', () => {
         assert.equal(true, false, 'Unexpected result')
       } catch (err) {
         assert.include(err.message, 'Could not get UTXOs')
+      }
+    })
+  })
+
+  describe('#filterUtxosByTokenAndBch', () => {
+    it('should hydrate and filter UTXOs', async () => {
+      // Mock live network calls.
+      sandbox
+        .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
+        .resolves(mockData.mockUtxosWithTokenDetails)
+
+      const result = await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
+
+      assert.property(result, 'tokenUTXOs')
+      assert.property(result, 'bchUTXOs')
+    })
+
+    it('should handle and throw an error', async () => {
+      try {
+        // Force an error.
+        sandbox
+          .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
+          .rejects('test error')
+
+        await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'ould not get details of UTXOs')
       }
     })
   })
