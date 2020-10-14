@@ -108,7 +108,7 @@ describe('#blockchain', () => {
     it('should hydrate and filter UTXOs', async () => {
       // Mock live network calls.
       sandbox
-        .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
+        .stub(uut.bchjs.SLP.Utils, 'hydrateUtxos')
         .resolves(mockData.mockUtxosWithTokenDetails)
 
       const result = await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
@@ -121,7 +121,7 @@ describe('#blockchain', () => {
       try {
         // Force an error.
         sandbox
-          .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
+          .stub(uut.bchjs.SLP.Utils, 'hydrateUtxos')
           .rejects('test error')
 
         await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
