@@ -70,21 +70,6 @@ class Sweeper {
     config.paperWif = wifFromPaperWallet
     config.receiverWif = wifFromReceiver
     this.transactions = new TransactionLib(config)
-
-    // this.WIFFromPaperWallet = WIFFromPaperWallet
-    // this.WIFFromReceiver = WIFFromReceiver
-    // this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(
-    //   this.WIFFromReceiver
-    // )
-    // this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(
-    //   this.ECPairFromReceiver
-    // )
-    // this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(
-    //   this.WIFFromPaperWallet
-    // )
-    // this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
-    //   this.ECPairFromPaperWallet
-    // )
   }
 
   // Constructors are not able to make async calls, therefore we need this
