@@ -156,6 +156,45 @@ class Sweeper {
     }
   }
 
+  // Generates an returns an hex-encoded transaction, ready to be broadcast to
+  // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
+  async sweepTo2 (toSLPAddr) {
+    try {
+      let hex = ''
+
+      // Identify the token ID to be swept.
+      const tokenIds = this.getTokenIds(
+        this.UTXOsFromPaperWallet.tokenUTXOs
+      )
+
+      // If there are no token UTXOs, then this is a BCH-only sweep.
+      if (tokenIds.length === 0) {
+        if (this.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
+          throw new Error('No BCH or tokens found on paper wallet')
+        }
+
+        hex = this.transactions.buildSweepOnlyBchFromPaper(
+          this.UTXOsFromPaperWallet.bchUTXOs
+        )
+
+        return hex
+      }
+
+      // Filter the token UTXOs for the selected token.
+
+      // If the paper wallet has no BCH, pay the TX fees from the receiver wallet.
+
+      // Sweep using BCH from the paper wallet to pay TX fees.
+
+      // No token UTXOs? Sweep BCH only.
+
+      return hex
+    } catch (err) {
+      console.error('Error in sweepTo2()')
+      throw err
+    }
+  }
+
   // Sweep a paper wallet. Expects toSLPAddr to be the address to send the tokens
   // and BCH to.
   // For now, tokenId can be ignored. Will be used in future functionality.

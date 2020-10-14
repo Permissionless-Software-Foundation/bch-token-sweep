@@ -119,7 +119,7 @@ describe('#index.js', () => {
       assert.equal(result.length, 1)
     })
 
-    it('should return token ID for a single UTXO', () => {
+    it('should return token IDs for two token class UTXOs', () => {
       const result = uut.getTokenIds(mockData.mockTwoTokenUtxos)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -135,6 +135,33 @@ describe('#index.js', () => {
       } catch (err) {
         // console.log(err)
         assert.include(err.message, 'Input must be an array')
+      }
+    })
+
+    it('should return an empty array if given an empty array', () => {
+      const result = uut.getTokenIds([])
+
+      assert.equal(result.length, 0)
+    })
+  })
+
+  describe('#sweepTo2', () => {
+    it('should throw an error if paper wallet has no tokens or BCH', async () => {
+      try {
+        // Mock the function that make network calls.
+        mockUtxos()
+
+        // Populate the instance with UTXO data.
+        await uut.populateObjectFromNetwork()
+
+        // Force paper wallet UTXOs to be empty.
+        uut.UTXOsFromPaperWallet.tokenUTXOs = []
+        uut.UTXOsFromPaperWallet.bchUTXOs = []
+
+        await uut.sweepTo2(uut.receiver.slpAddr)
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'No BCH or tokens found on paper wallet')
       }
     })
   })
