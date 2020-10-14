@@ -90,4 +90,26 @@ describe('#transactions.js', () => {
       assert.isString(hex)
     })
   })
+
+  describe('#buildSweepOnlyBchFromPaper', () => {
+    it('should generate a transaction', async () => {
+      const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
+      // console.log(`paperUtxos: ${JSON.stringify(paperUtxos, null, 2)}`)
+
+      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
+        paperUtxos
+      )
+      // console.log(
+      //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
+      // )
+
+      const hex = uut.buildSweepOnlyBchFromPaper(
+        paperHydratedUtxos.bchUTXOs
+      )
+      // console.log('hex: ', hex)
+
+      // Assert that the returned hex is a string
+      assert.isString(hex)
+    })
+  })
 })

@@ -56,7 +56,7 @@ describe('#blockchain', () => {
       ]
 
       const result = await uut.filterUtxosByTokenAndBch(utxos)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.property(result, 'tokenUTXOs')
       assert.property(result, 'bchUTXOs')

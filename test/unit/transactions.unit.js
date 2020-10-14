@@ -91,6 +91,25 @@ describe('#transactions.js', () => {
       // The function should return a hex string.
       assert.isString(hex)
     })
+
+    it('should catch and throw an error', () => {
+      try {
+        // Force an error.
+        sandbox
+          .stub(uut.bchjs, 'TransactionBuilder')
+          .throws(new Error('test error'))
+
+        uut.buildSweepSingleTokenWithBchFromPaper(
+          mockData.mockPaperHydratedUtxos.tokenUTXOs,
+          mockData.mockPaperHydratedUtxos.bchUTXOs
+        )
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'test error')
+      }
+    })
   })
 
   describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
@@ -102,6 +121,52 @@ describe('#transactions.js', () => {
 
       // The function should return a hex string.
       assert.isString(hex)
+    })
+
+    it('should catch and throw an error', () => {
+      try {
+        // Force an error.
+        sandbox
+          .stub(uut.bchjs, 'TransactionBuilder')
+          .throws(new Error('test error'))
+
+        uut.buildSweepSingleTokenWithoutBchFromPaper(
+          mockData.mockPaperHydratedUtxos.tokenUTXOs,
+          mockData.mockReceiverHydratedUtxos.bchUTXOs
+        )
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'test error')
+      }
+    })
+  })
+
+  describe('#buildSweepOnlyBchFromPaper', () => {
+    it('should match the expected hex for sucessful transaction', async () => {
+      const hex = uut.buildSweepOnlyBchFromPaper(
+        mockData.mockPaperHydratedUtxos.bchUTXOs
+      )
+
+      // The function should return a hex string.
+      assert.isString(hex)
+    })
+
+    it('should catch and throw an error', () => {
+      try {
+        // Force an error.
+        sandbox
+          .stub(uut.bchjs, 'TransactionBuilder')
+          .throws(new Error('test error'))
+
+        uut.buildSweepOnlyBchFromPaper(mockData.mockPaperHydratedUtxos.bchUTXOs)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'test error')
+      }
     })
   })
 })
