@@ -1,54 +1,79 @@
 /*
   E2E test for sweeping a single token and paying for tx fees with the recieving wallet.
+
+  Before running the test, this test will check that each wallet is set up correctly.
+  If they are not set up correctly, the test will exit and indicate what is wrong
+  with the set-up for the test.
 */
 
-// npm libraries
-const chai = require('chai')
-
-const assert = chai.assert
+// These are the WIF (private keys) used to operate the test.
+const paperWif = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
+const receiverWif = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
 
 // Unit under test
 const SweeperLib = require('../../index')
 
-describe('#index.js', () => {
-  describe('#Sweep tokens', () => {
-    it('should sweep tokens', async () => {
-      try {
-        // Reciever Info. Can be generated with get-key command from slp-cli-wallet.
-        // Send BCH to this address to pay for transaction fees.
-        const wIFFromReceiver =
-          'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
-        const slpAddress =
-          'simpleledger: qz726wyev5tk9d6vm23d5m4mrg92w4ke75pna6xe5v'
-        // bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j
+async function runTest () {
+  try {
+    // Instancing the library
+    const sweeperLib = new SweeperLib(paperWif, receiverWif)
+    await sweeperLib.populateObjectFromNetwork()
 
-        // Paper wallet info. Can also be generated with get-key command from
-        // slp-cli-wallet.
-        // Send tokens to this address to sweep them.
-        const paperWIF = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
-        // bitcoincash:qzzdt404ypq8hmrgctca8qm80u44k5fn3u5fzq6wft
-        // simpleledger:qzzdt404ypq8hmrgctca8qm80u44k5fn3ucjfm0wh4
+    await checkSetup(sweeperLib)
 
-        // Instancing the library
-        const sweeperLib = new SweeperLib(paperWIF, wIFFromReceiver)
-        await sweeperLib.populateObjectFromNetwork()
+    const hex = await sweeperLib.sweepTo2(sweeperLib.receiver.slpAddr)
+    // console.log(`hex: ${hex}`)
 
-        // Constructing the sweep transaction
-        const transactionHex = await sweeperLib.sweepTo(slpAddress)
-        // console.log('transactionHex: ', transactionHex)
+    const txid = await sweeperLib.blockchain.broadcast(hex)
 
-        // Broadcast the transaction to the network.
-        const txId = await sweeperLib.broadcast(transactionHex)
+    console.log('Transaction ID', txid)
+    console.log(`https://explorer.bitcoin.com/bch/tx/${txid}`)
+  } catch (error) {
+    console.error('Error in test: ', error)
+  }
+}
+runTest()
 
-        assert.isString(transactionHex)
-        assert.isString(txId)
+// Check to ensure the test is set up correctly.
+async function checkSetup (sweeperLib) {
+  // console.log(
+  //   `receiving wallet BCH UTXOs: ${JSON.stringify(
+  //     sweeperLib.UTXOsFromReceiver.bchUTXOs,
+  //     null,
+  //     2
+  //   )}`
+  // )
+  // Ensure the Reciever has a UTXO.
+  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length === 0) {
+    throw new Error(
+      `Receiver does not have BCH. Send 0.0001 BCH to ${
+        sweeperLib.receiver.bchAddr
+      }`
+    )
+  }
 
-        console.log('Transaction ID', txId)
-        console.log(`https://explorer.bitcoin.com/bch/tx/${txId}`)
-      } catch (error) {
-        console.error('Error: ', error)
-        assert.equal(true, false)
-      }
-    })
-  })
-})
+  // Ensure the Receiver has enough BCH to pay transaction fees.
+  console.log(`Receiver balance: ${sweeperLib.BCHBalanceFromReceiver}`)
+  if (sweeperLib.BCHBalanceFromReceiver < 5000) {
+    throw new Error(
+      'Receiver has less than 0.00005 BCH. Send that much to pay for transaction fees.'
+    )
+  }
+
+  // console.log(
+  //   `paper wallet SLP UTXOs: ${JSON.stringify(
+  //     sweeperLib.UTXOsFromPaperWallet.tokenUTXOs,
+  //     null,
+  //     2
+  //   )}`
+  // )
+  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length === 0) {
+    throw new Error(
+      `Paper wallet does not have any tokens! Send some SLP tokens to ${
+        sweeperLib.paper.slpAddr
+      }`
+    )
+  }
+  console.log('Tokens found on paper wallet. Test is good to go!')
+  console.log(' ')
+}

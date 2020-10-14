@@ -95,10 +95,10 @@ class Sweeper {
     try {
       // Get the balance and UTXOs from the reciever wallet.
       this.BCHBalanceFromReceiver = await this.blockchain.getBalanceForCashAddr(
-        this.CashAddrFromReceiver
+        this.receiver.bchAddr
       )
       const utxosFromReceiver = await this.blockchain.getUtxos(
-        this.CashAddrFromReceiver
+        this.receiver.bchAddr
       )
       const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch(
         utxosFromReceiver
@@ -106,10 +106,10 @@ class Sweeper {
 
       // Get the balance and UTXOs from the paper wallet.
       this.BCHBalanceFromPaperWallet = await this.blockchain.getBalanceForCashAddr(
-        this.CashAddrFromPaperWallet
+        this.paper.bchAddr
       )
       const utxosFromPaperWallet = await this.blockchain.getUtxos(
-        this.CashAddrFromPaperWallet
+        this.paper.bchAddr
       )
       const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch(
         utxosFromPaperWallet
@@ -159,13 +159,13 @@ class Sweeper {
   // Generates an returns an hex-encoded transaction, ready to be broadcast to
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo2 (toSLPAddr) {
-    console.log(
-      `this.UTXOsFromPaperWallet: ${JSON.stringify(
-        this.UTXOsFromPaperWallet,
-        null,
-        2
-      )}`
-    )
+    // console.log(
+    //   `this.UTXOsFromPaperWallet: ${JSON.stringify(
+    //     this.UTXOsFromPaperWallet,
+    //     null,
+    //     2
+    //   )}`
+    // )
 
     try {
       let hex = ''
@@ -175,6 +175,7 @@ class Sweeper {
 
       // If there are no token UTXOs, then this is a BCH-only sweep.
       if (tokenIds.length === 0) {
+        // If there is no tokens AND no BCH, throw an error.
         if (this.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
           throw new Error('No BCH or tokens found on paper wallet')
         }
