@@ -159,13 +159,19 @@ class Sweeper {
   // Generates an returns an hex-encoded transaction, ready to be broadcast to
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo2 (toSLPAddr) {
+    console.log(
+      `this.UTXOsFromPaperWallet: ${JSON.stringify(
+        this.UTXOsFromPaperWallet,
+        null,
+        2
+      )}`
+    )
+
     try {
       let hex = ''
 
       // Identify the token ID to be swept.
-      const tokenIds = this.getTokenIds(
-        this.UTXOsFromPaperWallet.tokenUTXOs
-      )
+      const tokenIds = this.getTokenIds(this.UTXOsFromPaperWallet.tokenUTXOs)
 
       // If there are no token UTXOs, then this is a BCH-only sweep.
       if (tokenIds.length === 0) {
@@ -173,6 +179,7 @@ class Sweeper {
           throw new Error('No BCH or tokens found on paper wallet')
         }
 
+        // Generate a BCH-only sweep transaction.
         hex = this.transactions.buildSweepOnlyBchFromPaper(
           this.UTXOsFromPaperWallet.bchUTXOs
         )
@@ -181,12 +188,39 @@ class Sweeper {
       }
 
       // Filter the token UTXOs for the selected token.
+      const selectedTokenId = tokenIds[0]
+      const selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
+        elem => elem.tokenId === selectedTokenId
+      )
 
       // If the paper wallet has no BCH, pay the TX fees from the receiver wallet.
+      if (this.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
+        // Retrieve *only* the token UTXOs for the selected token.
 
-      // Sweep using BCH from the paper wallet to pay TX fees.
+        console.log(
+          'No BCH found on paper wallet. Sweeping with BCH from the reciever wallet.'
+        )
 
-      // No token UTXOs? Sweep BCH only.
+        // Generate a token sweep using BCH from the receiver wallet to pay
+        // transaction fees.
+        hex = this.transactions.buildSweepSingleTokenWithoutBchFromPaper(
+          selectedTokenUtxos,
+          this.UTXOsFromReceiver.bchUTXOs
+        )
+      } else {
+        // Sweep using BCH from the paper wallet to pay TX fees.
+
+        console.log(
+          'BCH found on paper wallet, sweeping with BCH from the paper wallet.'
+        )
+
+        // Generate a token sweep using BCH from the paper wallet to pay
+        // transaction fees.
+        hex = this.transactions.buildSweepSingleTokenWithBchFromPaper(
+          selectedTokenUtxos,
+          this.UTXOsFromPaperWallet.bchUTXOs
+        )
+      }
 
       return hex
     } catch (err) {
