@@ -62,9 +62,9 @@ describe('#transactions.js', () => {
       const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
         paperUtxos
       )
-      // console.log(
-      //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
-      // )
+      console.log(
+        `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
+      )
 
       const receiverUtxos = await blockchain.getUtxos(uut.receiver.bchAddr)
       // console.log(`receiverUtxos: ${JSON.stringify(receiverUtxos, null, 2)}`)
@@ -72,13 +72,13 @@ describe('#transactions.js', () => {
       const receiverHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
         receiverUtxos
       )
-      // console.log(
-      //   `receiverHydratedUtxos: ${JSON.stringify(
-      //     receiverHydratedUtxos,
-      //     null,
-      //     2
-      //   )}`
-      // )
+      console.log(
+        `receiverHydratedUtxos: ${JSON.stringify(
+          receiverHydratedUtxos,
+          null,
+          2
+        )}`
+      )
 
       const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
         paperHydratedUtxos.tokenUTXOs,

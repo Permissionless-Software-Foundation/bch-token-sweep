@@ -1,5 +1,13 @@
 /* eslint-disable no-async-promise-executor */
+
 /*
+  Workflow for sweeping BCH and Tokens:
+  - Expand the WIF information with Blockchain.expandWif()
+  - Retrieve BCH and SLP token UTXO information from the blockchain with
+    populateObjectFromNetwork()
+  - Sweep with the sweepTo() method:
+    -
+
 *
 Sweep a private key with a single token class and no BCH.
 Sweep a private key with two classes of tokens and no BCH.
@@ -10,10 +18,7 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 *
 
   TODO:
-    - Move all functions other than sweep() to the util library.
-    - The sweep() function should return hex, instead of broadcasting the tx.
-      Broadcasting should be its own function. This will make it easier to write
-      tests.
+
 */
 
 'use strict'
@@ -31,7 +36,7 @@ const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
 const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
 class Sweeper {
-  constructor (WIFFromPaperWallet, WIFFromReceiver, BCHWrapper) {
+  constructor (wifFromPaperWallet, wifFromReceiver, BCHWrapper) {
     // This is an instance of bch-js. It will default to its own instance if one
     // is not provided.
     this.bchWrapper = BCHWrapper
@@ -39,35 +44,47 @@ class Sweeper {
       this.bchWrapper = DEFAULT_BCH_WRAPPER
     }
 
-    // Private key contained on the paper wallet.
-    if (!WIFFromPaperWallet) {
-      throw new Error('WIF from paper wallet not found')
+    // Pass the bch-js instance to the other support libraries.
+    const config = {
+      bchjs: this.bchWrapper
     }
+
+    // Encapsulate the support libraries.
+    this.blockchain = new Blockchain(config)
+    this.split = new Split()
+
+    // Private key contained on the paper wallet.
+    if (!wifFromPaperWallet) {
+      throw new Error('WIF from paper wallet is required')
+    }
+    this.paper = this.blockchain.expandWif(wifFromPaperWallet)
 
     // ToDo: A WIF from the reciever should not be required in all use cases.
     // If there is BCH on the paper wallet, it can be used to pay transaction fees.
-    if (!WIFFromReceiver) {
-      throw new Error('WIF from receiver not found')
+    if (!wifFromReceiver) {
+      throw new Error('WIF from receiver is required')
     }
+    this.receiver = this.blockchain.expandWif(wifFromReceiver)
 
-    this.WIFFromPaperWallet = WIFFromPaperWallet
-    this.WIFFromReceiver = WIFFromReceiver
-    this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(
-      this.WIFFromReceiver
-    )
-    this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(
-      this.ECPairFromReceiver
-    )
-    this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(
-      this.WIFFromPaperWallet
-    )
-    this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
-      this.ECPairFromPaperWallet
-    )
+    // Instantiate and encapsulate the transactions library.
+    config.paperWif = wifFromPaperWallet
+    config.receiverWif = wifFromReceiver
+    this.transactions = new TransactionLib(config)
 
-    // Add the splitting library.
-    this.split = new Split()
-    this.blockchain = new Blockchain()
+    // this.WIFFromPaperWallet = WIFFromPaperWallet
+    // this.WIFFromReceiver = WIFFromReceiver
+    // this.ECPairFromReceiver = this.bchWrapper.ECPair.fromWIF(
+    //   this.WIFFromReceiver
+    // )
+    // this.CashAddrFromReceiver = this.bchWrapper.ECPair.toCashAddress(
+    //   this.ECPairFromReceiver
+    // )
+    // this.ECPairFromPaperWallet = this.bchWrapper.ECPair.fromWIF(
+    //   this.WIFFromPaperWallet
+    // )
+    // this.CashAddrFromPaperWallet = this.bchWrapper.ECPair.toCashAddress(
+    //   this.ECPairFromPaperWallet
+    // )
   }
 
   // Constructors are not able to make async calls, therefore we need this
@@ -112,6 +129,33 @@ class Sweeper {
     }
   }
 
+  // A support function. Returns an array of token IDs for the different
+  // classes of tokens held on the paper wallet.
+  getTokenIds (tokenUtxos) {
+    try {
+      const tokenIds = []
+
+      if (!Array.isArray(tokenUtxos)) throw new Error('Input must be an array')
+
+      // Loop through each UTXO.
+      for (let i = 0; i < tokenUtxos.length; i++) {
+        const utxo = tokenUtxos[i]
+
+        // Has the token ID already been added to the array?
+        const idExists = tokenIds.find(elem => elem === utxo.tokenId)
+        // console.log(`idExists: ${JSON.stringify(idExists, null, 2)}`)
+
+        // If not, add the token ID to the array.
+        if (!idExists) tokenIds.push(utxo.tokenId)
+      }
+
+      return tokenIds
+    } catch (err) {
+      console.error('Error in getTokenIds()')
+      throw err
+    }
+  }
+
   // Sweep a paper wallet. Expects toSLPAddr to be the address to send the tokens
   // and BCH to.
   // For now, tokenId can be ignored. Will be used in future functionality.
@@ -122,8 +166,9 @@ class Sweeper {
 
       // Single Token
       if (tokenId) {
-        //
         // Sweep with BCH from the wallet, not the paper wallet.
+        //
+        // If the paper wallet has no BCH, pay the TX fees from the receiver wallet.
         if (this.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
           // Retrieve *only* the token UTXOs for the selected token.
 
@@ -139,7 +184,7 @@ class Sweeper {
           // it will use all the tokens for the sweep
           // being that the tokenId parameter is true by default
           // asume that a new tokenId is introduced
-          // if this is of string type
+          // if this is of type string.
           let tokenUtxos
           if (typeof tokenId === 'string') {
             // Retrieve *only* the token UTXOs for the selected token.
@@ -152,15 +197,15 @@ class Sweeper {
           // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
           // Generate a transaction to sweep the selected token from the paper wallet.
-          const util = new TransactionLib(
-            this.bchWrapper,
-            this.ECPairFromReceiver,
-            this.ECPairFromPaperWallet,
-            this.CashAddrFromReceiver,
-            toSLPAddr
-          )
+          // const util = new TransactionLib(
+          //   this.bchWrapper,
+          //   this.ECPairFromReceiver,
+          //   this.ECPairFromPaperWallet,
+          //   this.CashAddrFromReceiver,
+          //   toSLPAddr
+          // )
 
-          hex = util.buildSweepSingleTokenWithoutBchFromPaper(
+          hex = this.transactions.buildSweepSingleTokenWithoutBchFromPaper(
             tokenUtxos,
             this.UTXOsFromReceiver.bchUTXOs
           )
@@ -190,21 +235,21 @@ class Sweeper {
           }
 
           // Generate a transaction to sweep the selected token from the paper wallet.
-          const util = new TransactionLib(
-            this.bchWrapper,
-            this.ECPairFromReceiver,
-            this.ECPairFromPaperWallet,
-            this.CashAddrFromReceiver,
-            toSLPAddr
-          )
+          // const util = new TransactionLib(
+          //   this.bchWrapper,
+          //   this.ECPairFromReceiver,
+          //   this.ECPairFromPaperWallet,
+          //   this.CashAddrFromReceiver,
+          //   toSLPAddr
+          // )
 
           if (tokenUtxos.length) {
-            hex = util.buildSweepSingleTokenWithBchFromPaper(
+            hex = this.transactions.buildSweepSingleTokenWithBchFromPaper(
               tokenUtxos,
               this.UTXOsFromPaperWallet.bchUTXOs
             )
           } else {
-            hex = util.buildSweepOnlyBchFromPaper(
+            hex = this.transactions.buildSweepOnlyBchFromPaper(
               this.UTXOsFromPaperWallet.bchUTXOs
             )
           }
