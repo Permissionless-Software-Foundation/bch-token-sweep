@@ -83,35 +83,25 @@ describe('#transactions.js', () => {
 
   describe('#buildSweepSingleTokenWithBchFromPaper', () => {
     it('should match the expected hex for sucessful transaction', async () => {
-      // Generate an EC Pair to simulate the scanning of a WIF from a paper wallet.
-      // const rootSeedPaper = await bchjs.Mnemonic.toSeed(
-      //   mockData.mockSingleSweepWithBch.mnemonic
-      // )
-      // const masterHDNodePaper = bchjs.HDNode.fromSeed(rootSeedPaper)
-      // const accountPaper = bchjs.HDNode.derivePath(
-      //   masterHDNodePaper,
-      //   "m/44'/245'/0'"
-      // )
-      // const changePaper = bchjs.HDNode.derivePath(accountPaper, '0/0')
-      // const ECPairPaper = bchjs.HDNode.toKeyPair(changePaper)
-      //
-      // // Test the library.
-      // const util = new TransactionsLib(
-      //   bchjs,
-      //   undefined,
-      //   ECPairPaper,
-      //   mockData.mockSingleSweepWithBch.toCashAddr,
-      //   mockData.mockSingleSweepWithBch.toSlp
-      // )
-
-      // const hex = uut.buildSweepSingleTokenWithBchFromPaper(
-      uut.buildSweepSingleTokenWithBchFromPaper(
-        mockData.mockSingleSweepWithBch.tokenUTXOs,
-        mockData.mockSingleSweepWithBch.bchUTXOs
+      const hex = uut.buildSweepSingleTokenWithBchFromPaper(
+        mockData.mockPaperHydratedUtxos.tokenUTXOs,
+        mockData.mockPaperHydratedUtxos.bchUTXOs
       )
 
-      // Assert that the hext strings match.
-      // assert.equal(hex, mockData.mockSingleSweepWithBch.resultHex)
+      // The function should return a hex string.
+      assert.isString(hex)
+    })
+  })
+
+  describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
+    it('should match the expected hex for sucessful transaction', async () => {
+      const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
+        mockData.mockPaperHydratedUtxos.tokenUTXOs,
+        mockData.mockReceiverHydratedUtxos.bchUTXOs
+      )
+
+      // The function should return a hex string.
+      assert.isString(hex)
     })
   })
 })

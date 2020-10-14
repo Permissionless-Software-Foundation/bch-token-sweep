@@ -1,5 +1,8 @@
 /*
   Integration tests for the transactions.js utility library.
+
+  These tests assume the WIFs used have been prepared. If the tests fail, it's
+  most likely due to the funds on the WIFs changing or being drained.
 */
 
 // npm libraries
@@ -16,15 +19,11 @@ const blockchain = new Blockchain()
 const TransactionslLib = require('../../lib/transactions')
 let uut
 
-const receiverWif = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
-const paperWif = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
+const receiverWif = 'L3nSksvTtHHBRP3HNMDhy6hDKpu88PQvrLGzLJn3FYX2diKqC1GD'
+const paperWif = 'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
 
 describe('#transactions.js', () => {
   beforeEach(async () => {
-    // mockData = Object.assign({}, mockDataLib)
-
-    // sandbox = sinon.createSandbox()
-
     // Instantiate the UUT each time.
     const config = {
       paperWif,
@@ -35,23 +34,60 @@ describe('#transactions.js', () => {
 
   describe('#buildSweepSingleTokenWithBchFromPaper', () => {
     it('should generate a transaction', async () => {
-      const addr = uut.receiver.bchAddr
-      console.log(`addr: ${addr}`)
+      const addr = uut.paper.bchAddr
+      // console.log(`addr: ${addr}`)
 
       const utxos = await blockchain.getUtxos(addr)
-      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const hydratedUtxos = await blockchain.filterUtxosByTokenAndBch(utxos)
-      console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
+      // console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
 
       const hex = uut.buildSweepSingleTokenWithBchFromPaper(
         hydratedUtxos.tokenUTXOs,
         hydratedUtxos.bchUTXOs
       )
-      console.log('hex: ', hex)
+      // console.log('hex: ', hex)
 
-      // Assert that the hext strings match.
-      assert.equal(true, true)
+      // Assert that the returned hex is a string
+      assert.isString(hex)
+    })
+  })
+
+  describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
+    it('should generate a transaction', async () => {
+      const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
+      // console.log(`paperUtxos: ${JSON.stringify(paperUtxos, null, 2)}`)
+
+      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
+        paperUtxos
+      )
+      // console.log(
+      //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
+      // )
+
+      const receiverUtxos = await blockchain.getUtxos(uut.receiver.bchAddr)
+      // console.log(`receiverUtxos: ${JSON.stringify(receiverUtxos, null, 2)}`)
+
+      const receiverHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
+        receiverUtxos
+      )
+      // console.log(
+      //   `receiverHydratedUtxos: ${JSON.stringify(
+      //     receiverHydratedUtxos,
+      //     null,
+      //     2
+      //   )}`
+      // )
+
+      const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
+        paperHydratedUtxos.tokenUTXOs,
+        receiverHydratedUtxos.bchUTXOs
+      )
+      // console.log('hex: ', hex)
+
+      // Assert that the returned hex is a string
+      assert.isString(hex)
     })
   })
 })
