@@ -163,6 +163,11 @@ class Sweeper {
           throw new Error('No BCH or tokens found on paper wallet')
         }
 
+        // If there is not enough BCH, throw an error
+        if (this.BCHBalanceFromPaperWallet < 3000) {
+          throw new Error('Not enough BCH on paper wallet to sweep.')
+        }
+
         // Generate a BCH-only sweep transaction.
         hex = this.transactions.buildSweepOnlyBchFromPaper(
           this.UTXOsFromPaperWallet.bchUTXOs

@@ -172,10 +172,34 @@ describe('#index.js', () => {
       // Force paper wallet to have a BCH UTXO.
       uut.UTXOsFromPaperWallet.bchUTXOs =
         mockData.filteredUtxosFromReceiver.bchUTXOs
+      uut.BCHBalanceFromPaperWallet = 10000
 
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
       assert.isString(hex)
+    })
+
+    it('should throw error if not enough BCH to pay tx fees', async () => {
+      try {
+        // Mock the function that make network calls.
+        mockUtxos()
+
+        // Populate the instance with UTXO data.
+        await uut.populateObjectFromNetwork()
+
+        // Force paper wallet token UTXOs to be empty.
+        uut.UTXOsFromPaperWallet.tokenUTXOs = []
+
+        // Force paper wallet to have a BCH UTXO.
+        uut.UTXOsFromPaperWallet.bchUTXOs =
+          mockData.filteredUtxosFromReceiver.bchUTXOs
+
+        const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+        assert.isString(hex)
+      } catch (err) {
+        assert.include(err.message, 'Not enough BCH on paper wallet to sweep')
+      }
     })
 
     it('should generate a token-sweep tx if paper wallet has a single token and no BCH', async () => {
@@ -213,7 +237,9 @@ describe('#index.js', () => {
       await uut.populateObjectFromNetwork()
 
       // Adjust values
-      uut.paper = uut.blockchain.expandWif('KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m')
+      uut.paper = uut.blockchain.expandWif(
+        'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
+      )
       uut.UTXOsFromPaperWallet = mockData.mockAllPaperUtxosOneToken
 
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
@@ -229,7 +255,9 @@ describe('#index.js', () => {
       await uut.populateObjectFromNetwork()
 
       // Adjust values
-      uut.paper = uut.blockchain.expandWif('KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m')
+      uut.paper = uut.blockchain.expandWif(
+        'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
+      )
       uut.UTXOsFromPaperWallet = mockData.mockAllPaperUtxosTwoTokens
 
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
