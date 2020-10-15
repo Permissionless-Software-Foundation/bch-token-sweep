@@ -21,7 +21,7 @@ async function runTest () {
 
     await checkSetup(sweeperLib)
 
-    const hex = await sweeperLib.sweepTo2(sweeperLib.receiver.slpAddr)
+    const hex = await sweeperLib.sweepTo(sweeperLib.receiver.slpAddr)
     // console.log(`hex: ${hex}`)
 
     const txid = await sweeperLib.blockchain.broadcast(hex)
