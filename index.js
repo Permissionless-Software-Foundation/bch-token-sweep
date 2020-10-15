@@ -165,7 +165,7 @@ class Sweeper {
 
         // If there is not enough BCH, throw an error
         if (this.BCHBalanceFromPaperWallet < 3000) {
-          throw new Error('Not enough BCH on paper wallet to sweep.')
+          throw new Error('Not enough BCH on paper wallet to pay fees.')
         }
 
         // Generate a BCH-only sweep transaction.

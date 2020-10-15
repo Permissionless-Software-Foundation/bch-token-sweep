@@ -198,7 +198,7 @@ describe('#index.js', () => {
 
         assert.isString(hex)
       } catch (err) {
-        assert.include(err.message, 'Not enough BCH on paper wallet to sweep')
+        assert.include(err.message, 'Not enough BCH on paper wallet to pay fees')
       }
     })
 

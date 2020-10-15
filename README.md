@@ -1,6 +1,9 @@
 # bch-token-sweep
 
-This is an npm library based on [this boilerplate](https://github.com/christroutner/npm-lib-boilerplate). It uses [bch-js](https://github.com/Permissionless-Software-Foundation/bch-js) from [FullStack.cash](https://fullstack.cash) to sweep Bitcoin Cash (BCH) and SLP tokens from a paper wallet.
+This is a library that allow sweeping of Bitcoin Cash (BCH) and Simple Ledger Protocol (SLP) tokens from a paper wallet. Paper wallets are just a WIF private key ended inside a QR code. You can generate a paper wallet for BCH at [paperwallet.bitcoin.com](https://paperwallet.bitcoin.com) and [slp-paper-wallet.fullstack.cash](https://slp-paper-wallet.fullstack.cash/).
+
+This library is intended to be used by the [gatsby-plugin-bch-sweep](https://github.com/Permissionless-Software-Foundation/gatsby-plugin-bch-sweep) Gatsby Plugin. This is a plugin that is incorporated into the [wallet.fullstack.cash](https://wallet.fullstack.cash) web wallet.
+
 
 #  Licence
 [MIT](LICENSE.md)
