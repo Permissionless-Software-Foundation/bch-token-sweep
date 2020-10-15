@@ -1,5 +1,5 @@
 /*
-  Integration tests for the util.js utility library.
+  Integration tests for the index.js main library.
 */
 
 // npm libraries
