@@ -56,7 +56,9 @@ async function checkSetup (sweeperLib) {
   console.log(`Receiver balance: ${sweeperLib.BCHBalanceFromReceiver}`)
   if (sweeperLib.BCHBalanceFromReceiver < 5000) {
     throw new Error(
-      'Receiver has less than 0.00005 BCH. Send that much to pay for transaction fees.'
+      `Receiver has less than 0.00005 BCH. Send BCH to ${
+        sweeperLib.receiver.bchAddr
+      } much to pay for transaction fees.`
     )
   }
 

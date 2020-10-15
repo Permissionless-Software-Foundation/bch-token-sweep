@@ -77,7 +77,7 @@ describe('#transactions.js', () => {
       const result = uut.calculateSendCost(0, 0, 2)
       // console.log(`result: ${result}`)
 
-      assert.equal(result, 930)
+      assert.equal(result, 2964)
     })
   })
 
