@@ -22,7 +22,15 @@ async function runTest () {
 
     await checkSetup(sweeperLib)
 
-    const hex = await sweeperLib.sweepTo2(sweeperLib.receiver.slpAddr)
+    console.log(
+      `UTXOsFromPaperWallet: ${JSON.stringify(
+        sweeperLib.UTXOsFromPaperWallet,
+        null,
+        2
+      )}`
+    )
+
+    const hex = await sweeperLib.sweepTo(sweeperLib.receiver.slpAddr)
     // console.log(`hex: ${hex}`)
 
     const txid = await sweeperLib.blockchain.broadcast(hex)

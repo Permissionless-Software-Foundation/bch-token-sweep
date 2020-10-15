@@ -16,13 +16,7 @@ let uut
 describe('#index.js', () => {
   // Wallets used for testing.
   const receiverWIF = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
-  // const receiverCashAddr =
-  //   'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
-  // const receiverSlpAddress =
-  // 'simpleledger: qz726wyev5tk9d6vm23d5m4mrg92w4ke75pna6xe5v'
-
   const paperWIF = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
-  // const paperCashAddr = 'bitcoincash:qzzdt404ypq8hmrgctca8qm80u44k5fn3u5fzq6wft'
 
   // Restore the sandbox before each test.
   beforeEach(() => {
@@ -145,7 +139,7 @@ describe('#index.js', () => {
     })
   })
 
-  describe('#sweepTo2', () => {
+  describe('#sweepTo', () => {
     it('should throw an error if paper wallet has no tokens or BCH', async () => {
       try {
         // Mock the function that make network calls.
@@ -158,7 +152,7 @@ describe('#index.js', () => {
         uut.UTXOsFromPaperWallet.tokenUTXOs = []
         uut.UTXOsFromPaperWallet.bchUTXOs = []
 
-        await uut.sweepTo2(uut.receiver.slpAddr)
+        await uut.sweepTo(uut.receiver.slpAddr)
       } catch (err) {
         // console.log(err)
         assert.include(err.message, 'No BCH or tokens found on paper wallet')
@@ -176,9 +170,10 @@ describe('#index.js', () => {
       uut.UTXOsFromPaperWallet.tokenUTXOs = []
 
       // Force paper wallet to have a BCH UTXO.
-      uut.UTXOsFromPaperWallet.bchUTXOs = mockData.filteredUtxosFromReceiver.bchUTXOs
+      uut.UTXOsFromPaperWallet.bchUTXOs =
+        mockData.filteredUtxosFromReceiver.bchUTXOs
 
-      const hex = await uut.sweepTo2(uut.receiver.slpAddr)
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
       assert.isString(hex)
     })
@@ -190,7 +185,7 @@ describe('#index.js', () => {
       // Populate the instance with UTXO data.
       await uut.populateObjectFromNetwork()
 
-      const hex = await uut.sweepTo2(uut.receiver.slpAddr)
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
       assert.isString(hex)
     })
@@ -205,26 +200,41 @@ describe('#index.js', () => {
       // Force paper wallet token UTXOs to contain two token types.
       uut.UTXOsFromPaperWallet.tokenUTXOs = mockData.mockTwoTokenUtxos
 
-      const hex = await uut.sweepTo2(uut.receiver.slpAddr)
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
       assert.isString(hex)
     })
-  })
 
-  describe('#sweepTo', () => {
-    it('should return a hex transaction for sweeping tokens when paper wallet has no BCH', async () => {
+    it('should generate a token-sweep tx if paper wallet has a single token and BCH', async () => {
       // Mock the function that make network calls.
       mockUtxos()
 
       // Populate the instance with UTXO data.
       await uut.populateObjectFromNetwork()
 
-      // Constructing the sweep transaction
-      const transactionHex = await uut.sweepTo(uut.receiver.slpAddr)
-      // console.log('transactionHex: ', transactionHex)
+      // Adjust values
+      uut.paper = uut.blockchain.expandWif('KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m')
+      uut.UTXOsFromPaperWallet = mockData.mockAllPaperUtxosOneToken
 
-      // The function should return a hex encoded string representing a transaction.
-      assert.isString(transactionHex)
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+      assert.isString(hex)
+    })
+
+    it('should generate a token-sweep tx if paper wallet has two tokens and BCH', async () => {
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      // Adjust values
+      uut.paper = uut.blockchain.expandWif('KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m')
+      uut.UTXOsFromPaperWallet = mockData.mockAllPaperUtxosTwoTokens
+
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+      assert.isString(hex)
     })
   })
 })

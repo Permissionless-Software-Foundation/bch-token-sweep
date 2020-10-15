@@ -1,6 +1,6 @@
 /*
   E2E test for sweeping a two token classes and paying for tx fees with the
-  paper wallet. e.g. the paper wallet has both a token and BCH on it.
+  receiver wallet. e.g. the paper wallet has two token classes but no BCH.
 
   Before running the test, this test will check that each wallet is set up correctly.
   If they are not set up correctly, the test will exit and indicate what is wrong
@@ -44,20 +44,22 @@ async function checkSetup (sweeperLib) {
   //     2
   //   )}`
   // )
-  // Ensure the Paper has a UTXO.
-  if (sweeperLib.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
+  // Ensure the Receiver has a UTXO.
+  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length === 0) {
     throw new Error(
-      `Paper wallet does not have BCH. Send 0.00005 BCH to ${
-        sweeperLib.paper.bchAddr
+      `Receiver wallet does not have BCH. Send 0.00005 BCH to ${
+        sweeperLib.receiver.bchAddr
       }`
     )
   }
 
   // Ensure the Receiver has enough BCH to pay transaction fees.
-  console.log(`Paper wallet balance: ${sweeperLib.BCHBalanceFromPaperWallet}`)
-  if (sweeperLib.BCHBalanceFromPaperWallet < 5000) {
+  console.log(`Receiver wallet balance: ${sweeperLib.BCHBalanceFromReceiver}`)
+  if (sweeperLib.BCHBalanceFromReceiver < 5000) {
     throw new Error(
-      'Paper wallet has less than 0.00005 BCH. Send that much to pay for transaction fees.'
+      `Paper wallet has less than 0.00005 BCH. Send that much to pay for transaction fees to ${
+        sweeperLib.receiver.bchAddr
+      }`
     )
   }
 
