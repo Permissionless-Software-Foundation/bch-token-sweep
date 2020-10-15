@@ -28,7 +28,6 @@ const BCHJS = require('@psf/bch-js')
 
 // Local libraries
 const TransactionLib = require('./lib/transactions')
-const Split = require('./lib/split')
 const Blockchain = require('./lib/blockchain')
 
 // Constants
@@ -51,7 +50,6 @@ class Sweeper {
 
     // Encapsulate the support libraries.
     this.blockchain = new Blockchain(config)
-    this.split = new Split()
 
     // Private key contained on the paper wallet.
     if (!wifFromPaperWallet) {
