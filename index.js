@@ -35,7 +35,7 @@ const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
 const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
 class Sweeper {
-  constructor (wifFromPaperWallet, wifFromReceiver, BCHWrapper) {
+  constructor (wifFromPaperWallet, wifFromReceiver, BCHWrapper, donation = 2000) {
     // This is an instance of bch-js. It will default to its own instance if one
     // is not provided.
     this.bchWrapper = BCHWrapper
@@ -67,6 +67,7 @@ class Sweeper {
     // Instantiate and encapsulate the transactions library.
     config.paperWif = wifFromPaperWallet
     config.receiverWif = wifFromReceiver
+    config.donation = donation
     this.transactions = new TransactionLib(config)
   }
 
