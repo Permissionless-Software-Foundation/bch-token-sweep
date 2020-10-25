@@ -24,23 +24,24 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 'use strict'
 
 // Public npm libraries
-const BCHJS = require('@psf/bch-js')
+// const BCHJS = require('@psf/bch-js')
 
 // Local libraries
 const TransactionLib = require('./lib/transactions')
 const Blockchain = require('./lib/blockchain')
 
 // Constants
-const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
-const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
+// const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
+// const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
 class Sweeper {
-  constructor (wifFromPaperWallet, wifFromReceiver, BCHWrapper, donation = 2000) {
+  constructor (wifFromPaperWallet, wifFromReceiver, bchWrapper, donation = 2000) {
     // This is an instance of bch-js. It will default to its own instance if one
     // is not provided.
-    this.bchWrapper = BCHWrapper
-    if (!BCHWrapper) {
-      this.bchWrapper = DEFAULT_BCH_WRAPPER
+    this.bchWrapper = bchWrapper
+    if (!bchWrapper) {
+      // this.bchWrapper = DEFAULT_BCH_WRAPPER
+      throw new Error('bch-js instance must be passed when instantiating.')
     }
 
     // Pass the bch-js instance to the other support libraries.
