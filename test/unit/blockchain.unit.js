@@ -15,7 +15,8 @@ let uut
 
 describe('#blockchain', () => {
   beforeEach(() => {
-    uut = new Blockchain()
+    const config = { bchjs }
+    uut = new Blockchain(config)
 
     mockData = Object.assign({}, mockDataLib)
 
@@ -26,7 +27,8 @@ describe('#blockchain', () => {
 
   describe('#constructor', () => {
     it('should instantiate the class', () => {
-      uut = new Blockchain()
+      const config = { bchjs }
+      uut = new Blockchain(config)
 
       assert.property(uut, 'config')
     })
@@ -120,9 +122,7 @@ describe('#blockchain', () => {
     it('should handle and throw an error', async () => {
       try {
         // Force an error.
-        sandbox
-          .stub(uut.bchjs.SLP.Utils, 'hydrateUtxos')
-          .rejects('test error')
+        sandbox.stub(uut.bchjs.SLP.Utils, 'hydrateUtxos').rejects('test error')
 
         await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
 

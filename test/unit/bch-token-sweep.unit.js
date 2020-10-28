@@ -5,6 +5,7 @@
 // External npm libraries
 const assert = require('chai').assert
 const sinon = require('sinon')
+const BCHJS = require('@psf/bch-js')
 
 // Local libraries
 const SweeperLib = require('../../index.js')
@@ -12,6 +13,7 @@ const mockData = require('./mocks/bch-token-sweep-mocks.js')
 
 let sandbox
 let uut
+const bchjs = new BCHJS()
 
 describe('#index.js', () => {
   // Wallets used for testing.
@@ -22,14 +24,14 @@ describe('#index.js', () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox()
 
-    uut = new SweeperLib(paperWIF, receiverWIF)
+    uut = new SweeperLib(paperWIF, receiverWIF, bchjs)
   })
 
   afterEach(() => sandbox.restore())
 
   describe('#constructor', () => {
     it('should instantiate the sweep library', () => {
-      uut = new SweeperLib(paperWIF, receiverWIF)
+      uut = new SweeperLib(paperWIF, receiverWIF, bchjs)
 
       assert.property(uut.paper, 'wif')
       assert.property(uut.paper, 'ecPair')
@@ -42,9 +44,17 @@ describe('#index.js', () => {
       assert.property(uut.receiver, 'slpAddr')
     })
 
-    it('should throw an error if paper wallet wif is not included', () => {
+    it('should throw an error if bchjs is not included', () => {
       try {
         uut = new SweeperLib()
+      } catch (err) {
+        assert.include(err.message, 'bch-js instance must be passed when instantiating.')
+      }
+    })
+
+    it('should throw an error if paper wallet wif is not included', () => {
+      try {
+        uut = new SweeperLib(undefined, undefined, bchjs)
       } catch (err) {
         assert.include(err.message, 'WIF from paper wallet is required')
       }
@@ -52,7 +62,7 @@ describe('#index.js', () => {
 
     it('should throw an error if receiver wallet wif is not included', () => {
       try {
-        uut = new SweeperLib(paperWIF)
+        uut = new SweeperLib(paperWIF, undefined, bchjs)
       } catch (err) {
         assert.include(err.message, 'WIF from receiver is required')
       }

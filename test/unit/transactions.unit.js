@@ -33,7 +33,8 @@ describe('#transactions.js', () => {
     // Instantiate the UUT each time.
     const config = {
       paperWif,
-      receiverWif
+      receiverWif,
+      bchjs
     }
     uut = new TransactionsLib(config)
   })
@@ -43,7 +44,7 @@ describe('#transactions.js', () => {
   describe('#constructor', () => {
     it('should throw an error if paper wallet wif is not included', () => {
       try {
-        const config = {}
+        const config = { bchjs }
         uut = new TransactionsLib(config)
       } catch (err) {
         assert.include(err.message, 'wif for paper wallet required')
@@ -52,7 +53,7 @@ describe('#transactions.js', () => {
 
     it('should throw an error if receiver wallet wif is not included', () => {
       try {
-        const config = { paperWif }
+        const config = { paperWif, bchjs }
         uut = new TransactionsLib(config)
       } catch (err) {
         assert.include(err.message, 'wif for receiver wallet required')
