@@ -48,7 +48,10 @@ describe('#index.js', () => {
       try {
         uut = new SweeperLib()
       } catch (err) {
-        assert.include(err.message, 'bch-js instance must be passed when instantiating.')
+        assert.include(
+          err.message,
+          'bch-js instance must be passed when instantiating.'
+        )
       }
     })
 
@@ -189,7 +192,7 @@ describe('#index.js', () => {
       assert.isString(hex)
     })
 
-    it('should throw error if not enough BCH to pay tx fees', async () => {
+    it('should throw error if both paper and receiver wallet does not have enough BCH to pay tx fees', async () => {
       try {
         // Mock the function that make network calls.
         mockUtxos()
@@ -201,14 +204,21 @@ describe('#index.js', () => {
         uut.UTXOsFromPaperWallet.tokenUTXOs = []
 
         // Force paper wallet to have a BCH UTXO.
-        uut.UTXOsFromPaperWallet.bchUTXOs =
-          mockData.filteredUtxosFromReceiver.bchUTXOs
+        uut.UTXOsFromPaperWallet.bchUTXOs = mockData.utxosFromPaperWallet
+        uut.BCHBalanceFromReceiver = 546
 
-        const hex = await uut.sweepTo(uut.receiver.slpAddr)
+        // Force receiver to have only dust
+        uut.BCHBalanceFromReceiver = 546
+        uut.UTXOsFromReceiver.bchUTXOs = mockData.utxosFromPaperWallet
 
-        assert.isString(hex)
+        await uut.sweepTo(uut.receiver.slpAddr)
+
+        assert.fail('Unexpected result')
       } catch (err) {
-        assert.include(err.message, 'Not enough BCH on paper wallet to pay fees')
+        assert.include(
+          err.message,
+          'Not enough BCH on the paper wallet to pay fees. Send more BCH to the paper wallet in order to sweep it.'
+        )
       }
     })
 
@@ -246,6 +256,13 @@ describe('#index.js', () => {
       // Populate the instance with UTXO data.
       await uut.populateObjectFromNetwork()
 
+      // Force paper wallet to have BCH.
+      uut.BCHBalanceFromPaperWallet = 5000
+
+      // Force receiver to have only dust
+      uut.BCHBalanceFromReceiver = 546
+      uut.UTXOsFromReceiver.bchUTXOs = mockData.utxosFromPaperWallet
+
       // Adjust values
       uut.paper = uut.blockchain.expandWif(
         'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
@@ -273,6 +290,36 @@ describe('#index.js', () => {
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
       assert.isString(hex)
+    })
+
+    it('should throw error if paper has a token, but both paper and receiver wallet does not have enough BCH to pay tx fees', async () => {
+      try {
+        // Mock the function that make network calls.
+        mockUtxos()
+
+        // Populate the instance with UTXO data.
+        await uut.populateObjectFromNetwork()
+
+        // Force paper wallet token UTXOs to be empty.
+        // uut.UTXOsFromPaperWallet.tokenUTXOs = []
+
+        // Force paper wallet to have a BCH UTXO.
+        // uut.UTXOsFromPaperWallet.bchUTXOs = mockData.utxosFromPaperWallet
+        // uut.BCHBalanceFromReceiver = 546
+
+        // Force receiver to have only dust
+        uut.BCHBalanceFromReceiver = 546
+        uut.UTXOsFromReceiver.bchUTXOs = mockData.utxosFromPaperWallet
+
+        await uut.sweepTo(uut.receiver.slpAddr)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(
+          err.message,
+          'Not enough BCH on paper wallet or receiver wallet to pay fees.'
+        )
+      }
     })
   })
 })

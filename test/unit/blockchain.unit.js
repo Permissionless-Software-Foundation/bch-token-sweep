@@ -42,6 +42,16 @@ describe('#blockchain', () => {
 
       assert.property(uut, 'config')
     })
+
+    it('should throw an error if instance of bch-js is not passed in', () => {
+      try {
+        uut = new Blockchain()
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'bch-js instance must be passed when instantiating.')
+      }
+    })
   })
 
   describe('#getBalanceForCashAddr', () => {

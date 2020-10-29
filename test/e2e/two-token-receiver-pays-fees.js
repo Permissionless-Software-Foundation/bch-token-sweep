@@ -8,8 +8,11 @@
 */
 
 // These are the WIF (private keys) used to operate the test.
-const paperWif = 'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
-const receiverWif = 'L3nSksvTtHHBRP3HNMDhy6hDKpu88PQvrLGzLJn3FYX2diKqC1GD'
+const paperWif = 'L3oM4q4tNUZkT3gHZJkw4Rt6nYWveUNeZZudG82zLJVmaauRAgkj'
+const receiverWif = 'KzSwx57BYjZEekjGPH9sWpivShkqgGxV41zmkNYbCEgxdwPzhKJo'
+
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
 
 // Unit under test
 const SweeperLib = require('../../index')
@@ -17,7 +20,7 @@ const SweeperLib = require('../../index')
 async function runTest () {
   try {
     // Instancing the library
-    const sweeperLib = new SweeperLib(paperWif, receiverWif)
+    const sweeperLib = new SweeperLib(paperWif, receiverWif, bchjs)
     await sweeperLib.populateObjectFromNetwork()
 
     await checkSetup(sweeperLib)

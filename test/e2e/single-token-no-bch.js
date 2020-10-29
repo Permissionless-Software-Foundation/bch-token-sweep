@@ -1,20 +1,19 @@
 /*
-  E2E test for sweeping a single token and paying for tx fees with the recieving wallet.
+  This E2E test is a negative test case: it's expected to throw an error.
 
-  Before running the test, this test will check that each wallet is set up correctly.
-  If they are not set up correctly, the test will exit and indicate what is wrong
-  with the set-up for the test.
+  This tests the corner case of where a user has an SLP token on a paper wallet,
+  but neither the paper wallet nor the receiver wallet have BCH.
 */
 
 // These are the WIF (private keys) used to operate the test.
-const paperWif = 'L3oM4q4tNUZkT3gHZJkw4Rt6nYWveUNeZZudG82zLJVmaauRAgkj'
-const receiverWif = 'KzSwx57BYjZEekjGPH9sWpivShkqgGxV41zmkNYbCEgxdwPzhKJo'
-
-const BCHJS = require('@psf/bch-js')
-const bchjs = new BCHJS()
+const paperWif = 'KyvkSiN6gWjQenpkKSQzDh1JphuBYhsanGN5ZCL6bTy81fJL8ank'
+const receiverWif = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
 
 // Unit under test
 const SweeperLib = require('../../index')
+
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
 
 async function runTest () {
   try {
@@ -46,33 +45,35 @@ async function checkSetup (sweeperLib) {
   //     2
   //   )}`
   // )
-  // Ensure the Reciever has a UTXO.
-  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length === 0) {
+  // Ensure the Reciever has no UTXOs.
+  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length > 0) {
     throw new Error(
-      `Receiver does not have BCH. Send 0.0001 BCH to ${
-        sweeperLib.receiver.bchAddr
-      }`
-    )
-  }
-
-  // Ensure the Receiver has enough BCH to pay transaction fees.
-  console.log(`Receiver balance: ${sweeperLib.BCHBalanceFromReceiver}`)
-  if (sweeperLib.BCHBalanceFromReceiver < 5000) {
-    throw new Error(
-      `Receiver has less than 0.00005 BCH. Send BCH to ${
-        sweeperLib.receiver.bchAddr
-      } much to pay for transaction fees.`
+      'Receiver has BCH. Use the cleanup tool to sweep all funds from the wallet.'
     )
   }
 
   // console.log(
-  //   `paper wallet SLP UTXOs: ${JSON.stringify(
+  //   `paper wallet BCH UTXOs: ${JSON.stringify(
+  //     sweeperLib.UTXOsFromPaperWallet.bchUTXOs,
+  //     null,
+  //     2
+  //   )}`
+  // )
+  console.log(`sweeperLib.paper.bchAddr: ${sweeperLib.paper.bchAddr}`)
+  if (sweeperLib.UTXOsFromPaperWallet.bchUTXOs.length > 0) {
+    throw new Error(
+      'Paper wallet has BCH. Use the cleanup tool to sweep all funds from the paper wallet.'
+    )
+  }
+
+  // console.log(
+  //   `paper wallet token UTXOs: ${JSON.stringify(
   //     sweeperLib.UTXOsFromPaperWallet.tokenUTXOs,
   //     null,
   //     2
   //   )}`
   // )
-  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length === 0) {
+  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length !== 1) {
     throw new Error(
       `Paper wallet does not have any tokens! Send some SLP tokens to ${
         sweeperLib.paper.slpAddr
