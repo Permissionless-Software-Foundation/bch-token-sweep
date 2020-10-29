@@ -23,16 +23,9 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 
 'use strict'
 
-// Public npm libraries
-// const BCHJS = require('@psf/bch-js')
-
 // Local libraries
 const TransactionLib = require('./lib/transactions')
 const Blockchain = require('./lib/blockchain')
-
-// Constants
-// const FULLSTACK_MAINNET_API_FREE = 'https://free-main.fullstack.cash/v3/'
-// const DEFAULT_BCH_WRAPPER = new BCHJS({ restURL: FULLSTACK_MAINNET_API_FREE })
 
 class Sweeper {
   constructor (
@@ -47,7 +40,6 @@ class Sweeper {
     // is not provided.
     this.bchWrapper = bchWrapper
     if (!bchWrapper) {
-      // this.bchWrapper = DEFAULT_BCH_WRAPPER
       throw new Error('bch-js instance must be passed when instantiating.')
     }
 
@@ -151,9 +143,19 @@ class Sweeper {
   // Generates an returns an hex-encoded transaction, ready to be broadcast to
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo (toSLPAddr) {
+    // Used for debugging.
+    // console.log(`this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`)
     // console.log(
     //   `this.UTXOsFromPaperWallet: ${JSON.stringify(
     //     this.UTXOsFromPaperWallet,
+    //     null,
+    //     2
+    //   )}`
+    // )
+    // console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromPaperWallet}`)
+    // console.log(
+    //   `this.UTXOsFromReceiver: ${JSON.stringify(
+    //     this.UTXOsFromReceiver,
     //     null,
     //     2
     //   )}`
@@ -198,7 +200,6 @@ class Sweeper {
 
       // If the paper wallet does not have enough BCH, pay the TX fees from the
       // receiver wallet.
-      // if (this.UTXOsFromPaperWallet.bchUTXOs.length === 0) {
       if (this.BCHBalanceFromPaperWallet < (this.donation + 1000)) {
         // Retrieve *only* the token UTXOs for the selected token.
 
@@ -221,13 +222,6 @@ class Sweeper {
         )
       } else {
         // Sweep using BCH from the paper wallet to pay TX fees.
-
-        // If the receiver wallet does not have enough BCH, throw an error.
-        if (this.BCHBalanceFromPaperWallet < (this.donation + 1000)) {
-          throw new Error(
-            'Not enough BCH on paper wallet or receiver wallet to pay fees.'
-          )
-        }
 
         console.log(
           'BCH found on paper wallet, sweeping with BCH from the paper wallet.'
