@@ -12,10 +12,13 @@ const receiverWif = 'L22cDXNCqu2eWsGrZw7esnTyE91R7eZA1o7FND6pLGuEXrV8z4B8'
 // Unit under test
 const SweeperLib = require('../../index')
 
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
+
 async function runTest () {
   try {
     // Instancing the library
-    const sweeperLib = new SweeperLib(paperWif, receiverWif)
+    const sweeperLib = new SweeperLib(paperWif, receiverWif, bchjs)
     await sweeperLib.populateObjectFromNetwork()
 
     await checkSetup(sweeperLib)
@@ -42,33 +45,35 @@ async function checkSetup (sweeperLib) {
   //     2
   //   )}`
   // )
-  // Ensure the Reciever has a UTXO.
-  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length === 0) {
+  // Ensure the Reciever has no UTXOs.
+  if (sweeperLib.UTXOsFromReceiver.bchUTXOs.length > 0) {
     throw new Error(
-      `Receiver does not have BCH. Send 0.0001 BCH to ${
-        sweeperLib.receiver.bchAddr
-      }`
-    )
-  }
-
-  // Ensure the Receiver has enough BCH to pay transaction fees.
-  console.log(`Receiver balance: ${sweeperLib.BCHBalanceFromReceiver}`)
-  if (sweeperLib.BCHBalanceFromReceiver < 5000) {
-    throw new Error(
-      `Receiver has less than 0.00005 BCH. Send BCH to ${
-        sweeperLib.receiver.bchAddr
-      } much to pay for transaction fees.`
+      'Receiver has BCH. Use the cleanup tool to sweep all funds from the wallet.'
     )
   }
 
   // console.log(
-  //   `paper wallet SLP UTXOs: ${JSON.stringify(
+  //   `paper wallet BCH UTXOs: ${JSON.stringify(
+  //     sweeperLib.UTXOsFromPaperWallet.bchUTXOs,
+  //     null,
+  //     2
+  //   )}`
+  // )
+  console.log(`sweeperLib.paper.bchAddr: ${sweeperLib.paper.bchAddr}`)
+  if (sweeperLib.UTXOsFromPaperWallet.bchUTXOs.length > 0) {
+    throw new Error(
+      'Paper wallet has BCH. Use the cleanup tool to sweep all funds from the paper wallet.'
+    )
+  }
+
+  // console.log(
+  //   `paper wallet token UTXOs: ${JSON.stringify(
   //     sweeperLib.UTXOsFromPaperWallet.tokenUTXOs,
   //     null,
   //     2
   //   )}`
   // )
-  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length === 0) {
+  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length !== 1) {
     throw new Error(
       `Paper wallet does not have any tokens! Send some SLP tokens to ${
         sweeperLib.paper.slpAddr
