@@ -5,17 +5,7 @@
   - Expand the WIF information with Blockchain.expandWif()
   - Retrieve BCH and SLP token UTXO information from the blockchain with
     populateObjectFromNetwork()
-  - Sweep with the sweepTo() method:
-    -
-
-*
-Sweep a private key with a single token class and no BCH.
-Sweep a private key with two classes of tokens and no BCH.
-Sweep a prviate key with a single token class and some BCH.
-Sweep a private key with a two classes of tokens and some BCH.
-Sweep private key with single token class but multiple UTXOs and multiple BCH-only UTXOs.
-Sweep private key with two token classes and multiple UTXOS of each, and multiple BCH-only UTXOs.
-*
+  - Sweep with the sweepTo()
 
   TODO:
 
@@ -26,6 +16,9 @@ Sweep private key with two token classes and multiple UTXOS of each, and multipl
 // Local libraries
 const TransactionLib = require('./lib/transactions')
 const Blockchain = require('./lib/blockchain')
+
+// Constants
+const SAFETY_SATS = 2000 // safety margin to prevent dust transactions issues.
 
 class Sweeper {
   constructor (
@@ -144,7 +137,10 @@ class Sweeper {
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo (toSLPAddr) {
     // Used for debugging.
-    // console.log(`this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`)
+    // console.log(`Paper wallet address: ${this.paper.bchAddr}`)
+    // console.log(
+    //   `this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`
+    // )
     // console.log(
     //   `this.UTXOsFromPaperWallet: ${JSON.stringify(
     //     this.UTXOsFromPaperWallet,
@@ -152,7 +148,8 @@ class Sweeper {
     //     2
     //   )}`
     // )
-    // console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromPaperWallet}`)
+    // console.log(`Receiver address: ${this.receiver.bchAddr}`)
+    // console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromReceiver}`)
     // console.log(
     //   `this.UTXOsFromReceiver: ${JSON.stringify(
     //     this.UTXOsFromReceiver,
@@ -175,12 +172,10 @@ class Sweeper {
         }
 
         // If there is not enough BCH, throw an error
-        if (this.BCHBalanceFromPaperWallet < (this.donation + 1000)) {
-          if (this.BCHBalanceFromReceiver < (this.donation + 1000)) {
-            throw new Error(
-              'Not enough BCH on paper wallet or receiver wallet to pay fees.'
-            )
-          }
+        if (this.BCHBalanceFromPaperWallet < this.donation + SAFETY_SATS) {
+          throw new Error(
+            'Not enough BCH on the paper wallet to pay fees. Send more BCH to the paper wallet in order to sweep it.'
+          )
         }
 
         // Generate a BCH-only sweep transaction.
@@ -200,11 +195,11 @@ class Sweeper {
 
       // If the paper wallet does not have enough BCH, pay the TX fees from the
       // receiver wallet.
-      if (this.BCHBalanceFromPaperWallet < (this.donation + 1000)) {
+      if (this.BCHBalanceFromPaperWallet < this.donation + SAFETY_SATS) {
         // Retrieve *only* the token UTXOs for the selected token.
 
         // If the receiver wallet does not have enough BCH, throw an error.
-        if (this.BCHBalanceFromReceiver < (this.donation + 1000)) {
+        if (this.BCHBalanceFromReceiver < this.donation + SAFETY_SATS) {
           throw new Error(
             'Not enough BCH on paper wallet or receiver wallet to pay fees.'
           )

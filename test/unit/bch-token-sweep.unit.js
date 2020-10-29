@@ -217,7 +217,7 @@ describe('#index.js', () => {
       } catch (err) {
         assert.include(
           err.message,
-          'Not enough BCH on paper wallet or receiver wallet to pay fees.'
+          'Not enough BCH on the paper wallet to pay fees. Send more BCH to the paper wallet in order to sweep it.'
         )
       }
     })
