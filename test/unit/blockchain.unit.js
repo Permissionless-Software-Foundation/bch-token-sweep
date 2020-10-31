@@ -169,4 +169,15 @@ describe('#blockchain', () => {
       assert.property(result, 'slpAddr')
     })
   })
+
+  describe('#getNonTokenBch', () => {
+    it('should calculate non-token BCH', () => {
+      const utxoObj = mockData.mockPaperWallet
+
+      const result = uut.getNonTokenBch(utxoObj)
+      // console.log(`result: ${result}`)
+
+      assert.equal(result, 19028)
+    })
+  })
 })

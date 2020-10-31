@@ -300,13 +300,6 @@ describe('#index.js', () => {
         // Populate the instance with UTXO data.
         await uut.populateObjectFromNetwork()
 
-        // Force paper wallet token UTXOs to be empty.
-        // uut.UTXOsFromPaperWallet.tokenUTXOs = []
-
-        // Force paper wallet to have a BCH UTXO.
-        // uut.UTXOsFromPaperWallet.bchUTXOs = mockData.utxosFromPaperWallet
-        // uut.BCHBalanceFromReceiver = 546
-
         // Force receiver to have only dust
         uut.BCHBalanceFromReceiver = 546
         uut.UTXOsFromReceiver.bchUTXOs = mockData.utxosFromPaperWallet
@@ -320,6 +313,22 @@ describe('#index.js', () => {
           'Not enough BCH on paper wallet or receiver wallet to pay fees.'
         )
       }
+    })
+
+    it('should choose receiver to pay fees for paper wallet with no BCH and a bunch of tokens', async () => {
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      // Force paper wallet to have a ton of token UTXOs and no BCH.
+      uut.BCHBalanceFromPaperWallet = 10000
+      uut.UTXOsFromPaperWallet = mockData.mockPaperWalletWithLotsOfTokens
+
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+      assert.isString(hex)
     })
   })
 })

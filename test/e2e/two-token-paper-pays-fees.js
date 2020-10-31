@@ -8,8 +8,8 @@
 */
 
 // These are the WIF (private keys) used to operate the test.
-const paperWif = 'L3oM4q4tNUZkT3gHZJkw4Rt6nYWveUNeZZudG82zLJVmaauRAgkj'
-const receiverWif = 'KzSwx57BYjZEekjGPH9sWpivShkqgGxV41zmkNYbCEgxdwPzhKJo'
+const paperWif = ''
+const receiverWif = ''
 
 const BCHJS = require('@psf/bch-js')
 const bchjs = new BCHJS()
