@@ -43,7 +43,7 @@
     "bignumber.js": "^9.0.0"
   },
   "devDependencies": {
-    "@psf/bch-js": "^3.8.4",
+    "@psf/bch-js": "^3.8.6",
     "apidoc": "^0.25.0",
     "browserify": "^16.5.2",
     "chai": "^4.1.2",

@@ -193,9 +193,14 @@ class Sweeper {
         elem => elem.tokenId === selectedTokenId
       )
 
+      // Calculate the non-token BCH available for spending on the paper wallet.
+      const paperSpendableBch = this.blockchain.getNonTokenBch(this.UTXOsFromPaperWallet)
+      // console.log(`paperSpendableBch: ${paperSpendableBch}`)
+
       // If the paper wallet does not have enough BCH, pay the TX fees from the
       // receiver wallet.
-      if (this.BCHBalanceFromPaperWallet < this.donation + SAFETY_SATS) {
+      // TODO: Calculate non-token BCH.
+      if (paperSpendableBch < this.donation + SAFETY_SATS) {
         // Retrieve *only* the token UTXOs for the selected token.
 
         // If the receiver wallet does not have enough BCH, throw an error.
