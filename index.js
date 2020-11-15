@@ -25,7 +25,8 @@ class Sweeper {
     wifFromPaperWallet,
     wifFromReceiver,
     bchWrapper,
-    donation = 2000
+    donation = 2000,
+    toAddr
   ) {
     this.donation = donation
 
@@ -56,6 +57,10 @@ class Sweeper {
       throw new Error('WIF from receiver is required')
     }
     this.receiver = this.blockchain.expandWif(wifFromReceiver)
+
+    // If a to-address is not specified, assign it to the receiver wallet address.
+    if (toAddr) this.toAddr = toAddr
+    else this.toAddr = this.receiver.bchAddr
 
     // Instantiate and encapsulate the transactions library.
     config.paperWif = wifFromPaperWallet
@@ -180,7 +185,8 @@ class Sweeper {
 
         // Generate a BCH-only sweep transaction.
         hex = this.transactions.buildSweepOnlyBchFromPaper(
-          this.UTXOsFromPaperWallet.bchUTXOs
+          this.UTXOsFromPaperWallet.bchUTXOs,
+          this.toAddr
         )
 
         return hex
@@ -194,7 +200,9 @@ class Sweeper {
       )
 
       // Calculate the non-token BCH available for spending on the paper wallet.
-      const paperSpendableBch = this.blockchain.getNonTokenBch(this.UTXOsFromPaperWallet)
+      const paperSpendableBch = this.blockchain.getNonTokenBch(
+        this.UTXOsFromPaperWallet
+      )
       // console.log(`paperSpendableBch: ${paperSpendableBch}`)
 
       // If the paper wallet does not have enough BCH, pay the TX fees from the
@@ -218,7 +226,8 @@ class Sweeper {
         // transaction fees.
         hex = this.transactions.buildSweepSingleTokenWithoutBchFromPaper(
           selectedTokenUtxos,
-          this.UTXOsFromReceiver.bchUTXOs
+          this.UTXOsFromReceiver.bchUTXOs,
+          this.toAddr
         )
       } else {
         // Sweep using BCH from the paper wallet to pay TX fees.
@@ -231,7 +240,8 @@ class Sweeper {
         // transaction fees.
         hex = this.transactions.buildSweepSingleTokenWithBchFromPaper(
           selectedTokenUtxos,
-          this.UTXOsFromPaperWallet.bchUTXOs
+          this.UTXOsFromPaperWallet.bchUTXOs,
+          this.toAddr
         )
       }
 

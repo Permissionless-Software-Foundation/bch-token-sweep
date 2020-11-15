@@ -70,6 +70,14 @@ describe('#index.js', () => {
         assert.include(err.message, 'WIF from receiver is required')
       }
     })
+
+    it('should instantiate with a to-address', () => {
+      const toAddr = 'bitcoincash:qpqug5fmpgm0mpc4hep3cu3tm7fr7yvnjcwlq46dvk'
+
+      uut = new SweeperLib(paperWIF, receiverWIF, bchjs, 2000, toAddr)
+
+      assert.equal(uut.toAddr, toAddr)
+    })
   })
 
   describe('#populateObjectFromNetwork', () => {
