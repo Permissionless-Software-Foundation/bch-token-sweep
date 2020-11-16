@@ -142,26 +142,26 @@ class Sweeper {
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo (toSLPAddr) {
     // Used for debugging.
-    // console.log(`Paper wallet address: ${this.paper.bchAddr}`)
-    // console.log(
-    //   `this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`
-    // )
-    // console.log(
-    //   `this.UTXOsFromPaperWallet: ${JSON.stringify(
-    //     this.UTXOsFromPaperWallet,
-    //     null,
-    //     2
-    //   )}`
-    // )
-    // console.log(`Receiver address: ${this.receiver.bchAddr}`)
-    // console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromReceiver}`)
-    // console.log(
-    //   `this.UTXOsFromReceiver: ${JSON.stringify(
-    //     this.UTXOsFromReceiver,
-    //     null,
-    //     2
-    //   )}`
-    // )
+    console.log(`Paper wallet address: ${this.paper.bchAddr}`)
+    console.log(
+      `this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`
+    )
+    console.log(
+      `this.UTXOsFromPaperWallet: ${JSON.stringify(
+        this.UTXOsFromPaperWallet,
+        null,
+        2
+      )}`
+    )
+    console.log(`Receiver address: ${this.receiver.bchAddr}`)
+    console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromReceiver}`)
+    console.log(
+      `this.UTXOsFromReceiver: ${JSON.stringify(
+        this.UTXOsFromReceiver,
+        null,
+        2
+      )}`
+    )
 
     try {
       let hex = ''
