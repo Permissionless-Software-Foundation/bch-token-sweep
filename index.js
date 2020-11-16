@@ -61,6 +61,7 @@ class Sweeper {
     // If a to-address is not specified, assign it to the receiver wallet address.
     if (toAddr) this.toAddr = toAddr
     else this.toAddr = this.receiver.bchAddr
+    console.log(`toAddr: ${toAddr}`)
 
     // Instantiate and encapsulate the transactions library.
     config.paperWif = wifFromPaperWallet
