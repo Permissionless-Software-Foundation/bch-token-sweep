@@ -5,14 +5,16 @@
 // External npm libraries
 const assert = require('chai').assert
 const sinon = require('sinon')
+const cloneDeep = require('lodash.clonedeep')
 const BCHJS = require('@psf/bch-js')
 
 // Local libraries
 const SweeperLib = require('../../index.js')
-const mockData = require('./mocks/bch-token-sweep-mocks.js')
+const mockDataLib = require('./mocks/bch-token-sweep-mocks.js')
 
 let sandbox
 let uut
+let mockData
 const bchjs = new BCHJS()
 
 describe('#index.js', () => {
@@ -23,6 +25,8 @@ describe('#index.js', () => {
   // Restore the sandbox before each test.
   beforeEach(() => {
     sandbox = sinon.createSandbox()
+
+    mockData = cloneDeep(mockDataLib)
 
     uut = new SweeperLib(paperWIF, receiverWIF, bchjs)
   })
@@ -333,6 +337,28 @@ describe('#index.js', () => {
       // Force paper wallet to have a ton of token UTXOs and no BCH.
       uut.BCHBalanceFromPaperWallet = 10000
       uut.UTXOsFromPaperWallet = mockData.mockPaperWalletWithLotsOfTokens
+
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+      assert.isString(hex)
+    })
+
+    it('should ignore a minting baton', async () => {
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      // Force the token UTXOs to have a minting baton UTXO.
+      uut.UTXOsFromPaperWallet.tokenUTXOs = mockData.tokenUtxosWithMintingBaton
+      // console.log(
+      //   `uut.UTXOsFromPaperWallet.tokenUTXOs: ${JSON.stringify(
+      //     uut.UTXOsFromPaperWallet.tokenUTXOs,
+      //     null,
+      //     2
+      //   )}`
+      // )
 
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
