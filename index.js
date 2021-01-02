@@ -143,26 +143,26 @@ class Sweeper {
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo (toSLPAddr) {
     // Used for debugging.
-    console.log(`Paper wallet address: ${this.paper.bchAddr}`)
-    console.log(
-      `this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`
-    )
-    console.log(
-      `this.UTXOsFromPaperWallet: ${JSON.stringify(
-        this.UTXOsFromPaperWallet,
-        null,
-        2
-      )}`
-    )
-    console.log(`Receiver address: ${this.receiver.bchAddr}`)
-    console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromReceiver}`)
-    console.log(
-      `this.UTXOsFromReceiver: ${JSON.stringify(
-        this.UTXOsFromReceiver,
-        null,
-        2
-      )}`
-    )
+    // console.log(`Paper wallet address: ${this.paper.bchAddr}`)
+    // console.log(
+    //   `this.BCHBalanceFromPaperWallet: ${this.BCHBalanceFromPaperWallet}`
+    // )
+    // console.log(
+    //   `this.UTXOsFromPaperWallet: ${JSON.stringify(
+    //     this.UTXOsFromPaperWallet,
+    //     null,
+    //     2
+    //   )}`
+    // )
+    // console.log(`Receiver address: ${this.receiver.bchAddr}`)
+    // console.log(`this.BCHBalanceFromReceiver: ${this.BCHBalanceFromReceiver}`)
+    // console.log(
+    //   `this.UTXOsFromReceiver: ${JSON.stringify(
+    //     this.UTXOsFromReceiver,
+    //     null,
+    //     2
+    //   )}`
+    // )
 
     try {
       let hex = ''
@@ -195,10 +195,12 @@ class Sweeper {
       // There *are* tokens on the paper wallet.
 
       // Filter the token UTXOs for the selected token.
+      // Ignore minting batons.
       const selectedTokenId = tokenIds[0]
       const selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
-        elem => elem.tokenId === selectedTokenId
+        elem => elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
       )
+      // console.log(`selectedTokenUtxos: ${JSON.stringify(selectedTokenUtxos, null, 2)}`)
 
       // Calculate the non-token BCH available for spending on the paper wallet.
       const paperSpendableBch = this.blockchain.getNonTokenBch(
