@@ -1,13 +1,13 @@
 // npm libraries
 const assert = require('chai').assert
-// const BCHJS = require('@psf/bch-js')
+const BCHJS = require('@psf/bch-js')
 
 // Locally global variables.
-// const bchjs = new BCHJS()
+const bchjs = new BCHJS()
 
 // Unit under test
 const Blockchain = require('../../lib/blockchain')
-const uut = new Blockchain()
+const uut = new Blockchain({ bchjs })
 
 describe('#blockchain', () => {
   beforeEach(() => {

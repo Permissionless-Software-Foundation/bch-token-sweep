@@ -6,8 +6,8 @@
 const assert = require('chai').assert
 
 // const { mockSingleSweepWithBch } = require('../unit/mocks/util-mocks')
-// const BCHJS = require('@psf/bch-js')
-// const bchjs = new BCHJS()
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
 // Locally global variables.
 
 // Unit under test
@@ -22,13 +22,13 @@ describe('#index.js', () => {
         const sweepToAddr =
           'simpleledger:qqcun9hyykrlcfwpkgakryk55mdnuczvt5v60t0zqj'
 
-        uut = new SweeperLib(wif, wif)
+        uut = new SweeperLib(wif, wif, bchjs)
         await uut.populateObjectFromNetwork()
 
         await uut.sweepTo(sweepToAddr)
       } catch (err) {
         // console.log('err: ', err)
-        assert.include(err.message, 'No token UTXOs found on paper wallet')
+        assert.include(err.message, 'No BCH or tokens found on paper wallet')
       }
     })
   })
