@@ -124,6 +124,34 @@ describe('#transactions.js', () => {
         assert.include(err.message, 'test error')
       }
     })
+
+    it('should throw an error if BCH UTXO array is empty', () => {
+      try {
+        uut.buildSweepSingleTokenWithBchFromPaper(
+          mockData.mockPaperHydratedUtxos.tokenUTXOs,
+          []
+        )
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'BCH UTXOs array is empty')
+      }
+    })
+
+    it('should throw an error if token UTXO array is empty', () => {
+      try {
+        uut.buildSweepSingleTokenWithBchFromPaper(
+          [],
+          mockData.mockPaperHydratedUtxos.bchUTXOs
+        )
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'Token UTXOs array is empty')
+      }
+    })
   })
 
   describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
@@ -155,6 +183,34 @@ describe('#transactions.js', () => {
         assert.include(err.message, 'test error')
       }
     })
+
+    it('should throw an error if BCH UTXO array is empty', () => {
+      try {
+        uut.buildSweepSingleTokenWithoutBchFromPaper(
+          mockData.mockPaperHydratedUtxos.tokenUTXOs,
+          []
+        )
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'BCH UTXOs array is empty')
+      }
+    })
+
+    it('should throw an error if token UTXO array is empty', () => {
+      try {
+        uut.buildSweepSingleTokenWithoutBchFromPaper(
+          [],
+          mockData.mockReceiverHydratedUtxos.bchUTXOs
+        )
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'Token UTXOs array is empty')
+      }
+    })
   })
 
   describe('#buildSweepOnlyBchFromPaper', () => {
@@ -180,6 +236,17 @@ describe('#transactions.js', () => {
       } catch (err) {
         // console.log(err)
         assert.include(err.message, 'test error')
+      }
+    })
+
+    it('should throw an error if BCH UTXO array is empty', () => {
+      try {
+        uut.buildSweepOnlyBchFromPaper([])
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'BCH UTXOs array is empty')
       }
     })
   })

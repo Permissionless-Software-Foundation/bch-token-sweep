@@ -8,12 +8,12 @@
 // npm libraries
 const assert = require('chai').assert
 // const { mockSingleSweepWithBch } = require('../unit/mocks/util-mocks')
-// const BCHJS = require('@psf/bch-js')
-// const bchjs = new BCHJS()
+const BCHJS = require('@psf/bch-js')
+const bchjs = new BCHJS()
 // Locally global variables.
 
 const Blockchain = require('../../lib/blockchain')
-const blockchain = new Blockchain()
+const blockchain = new Blockchain({ bchjs })
 
 // Unit under test
 const TransactionslLib = require('../../lib/transactions')
@@ -27,7 +27,8 @@ describe('#transactions.js', () => {
     // Instantiate the UUT each time.
     const config = {
       paperWif,
-      receiverWif
+      receiverWif,
+      bchjs
     }
     uut = new TransactionslLib(config)
   })
@@ -38,10 +39,10 @@ describe('#transactions.js', () => {
       // console.log(`addr: ${addr}`)
 
       const utxos = await blockchain.getUtxos(addr)
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const hydratedUtxos = await blockchain.filterUtxosByTokenAndBch(utxos)
-      // console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
+      console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
 
       const hex = uut.buildSweepSingleTokenWithBchFromPaper(
         hydratedUtxos.tokenUTXOs,
@@ -103,9 +104,7 @@ describe('#transactions.js', () => {
       //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
       // )
 
-      const hex = uut.buildSweepOnlyBchFromPaper(
-        paperHydratedUtxos.bchUTXOs
-      )
+      const hex = uut.buildSweepOnlyBchFromPaper(paperHydratedUtxos.bchUTXOs)
       // console.log('hex: ', hex)
 
       // Assert that the returned hex is a string
