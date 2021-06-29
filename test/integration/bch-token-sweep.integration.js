@@ -31,5 +31,18 @@ describe('#index.js', () => {
         assert.include(err.message, 'No BCH or tokens found on paper wallet')
       }
     })
+
+    it('should sweep the first 15 token UTXOs', async () => {
+      /*
+        TODO:
+        To exercise this test case, create a script that can generate 20
+        SLP token UTXOs of the same token.
+
+        The behavior of the sweepTo() function is that it should only try to
+        sweep the first 15 token UTXOs. Any UTXO lookup or hydration should
+        use a POST call and only use up to 20 elements.
+      */
+      assert.equal(1, 1)
+    })
   })
 })
