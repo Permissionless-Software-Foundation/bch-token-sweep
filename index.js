@@ -68,6 +68,7 @@ class Sweeper {
     config.receiverWif = wifFromReceiver
     config.donation = donation
     this.transactions = new TransactionLib(config)
+    this.limitOfTokenUtxos = 5
   }
 
   // Constructors are not able to make async calls, therefore we need this
@@ -94,8 +95,12 @@ class Sweeper {
       const utxosFromPaperWallet = await this.blockchain.getUtxos(
         this.paper.bchAddr
       )
+      const firstTokenUtxosFromPaperWallet = utxosFromPaperWallet.slice(
+        0,
+        this.limitOfTokenUtxos
+      )
       const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch(
-        utxosFromPaperWallet
+        firstTokenUtxosFromPaperWallet
       )
 
       // Set a bunch of values in the instance?
@@ -125,7 +130,7 @@ class Sweeper {
         const utxo = tokenUtxos[i]
 
         // Has the token ID already been added to the array?
-        const idExists = tokenIds.find(elem => elem === utxo.tokenId)
+        const idExists = tokenIds.find((elem) => elem === utxo.tokenId)
         // console.log(`idExists: ${JSON.stringify(idExists, null, 2)}`)
 
         // If not, add the token ID to the array.
@@ -198,7 +203,8 @@ class Sweeper {
       // Ignore minting batons.
       const selectedTokenId = tokenIds[0]
       const selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
-        elem => elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
+        (elem) =>
+          elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
       )
       // console.log(`selectedTokenUtxos: ${JSON.stringify(selectedTokenUtxos, null, 2)}`)
 
