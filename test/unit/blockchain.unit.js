@@ -49,7 +49,10 @@ describe('#blockchain', () => {
 
         assert.fail('Unexpected result')
       } catch (err) {
-        assert.include(err.message, 'bch-js instance must be passed when instantiating.')
+        assert.include(
+          err.message,
+          'bch-js instance must be passed when instantiating.'
+        )
       }
     })
   })
@@ -127,6 +130,14 @@ describe('#blockchain', () => {
 
       assert.property(result, 'tokenUTXOs')
       assert.property(result, 'bchUTXOs')
+    })
+    it('should return empty Slp and Bch Utxos on empty input', async () => {
+      const result = await uut.filterUtxosByTokenAndBch([])
+
+      assert.property(result, 'tokenUTXOs')
+      assert.property(result, 'bchUTXOs')
+      assert.equal(result.tokenUTXOs.length, 0)
+      assert.equal(result.bchUTXOs.length, 0)
     })
 
     it('should handle and throw an error', async () => {

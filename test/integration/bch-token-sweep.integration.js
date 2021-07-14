@@ -32,17 +32,20 @@ describe('#index.js', () => {
       }
     })
 
-    it('should sweep the first 15 token UTXOs', async () => {
-      /*
-        TODO:
-        To exercise this test case, create a script that can generate 20
-        SLP token UTXOs of the same token.
+    it('should sweep the first 5 token UTXOs', async () => {
+      const paperWif = 'Kx2MD7FBdWhQyA7Hf1L17DAZ2mcvDXVaJkFHfXRDysBjUafY1CJS'
+      const receiverWif = 'L3TU7JMULx6GGXMAt3UDHNt6XXsfNQL8EwLBjZQ1ZMFV36PKecwW'
+      const sweepToAddr =
+        'simpleledger:qzaw2tcjyylu0zrwcauaqtyvt7m3wzzgkvg5alvsx3'
 
-        The behavior of the sweepTo() function is that it should only try to
-        sweep the first 15 token UTXOs. Any UTXO lookup or hydration should
-        use a POST call and only use up to 20 elements.
-      */
-      assert.equal(1, 1)
+      const limit = 5
+      uut = new SweeperLib(paperWif, receiverWif, bchjs, 0, sweepToAddr)
+      uut.limitOfTokenUtxos = limit
+
+      await uut.populateObjectFromNetwork()
+
+      await uut.sweepTo()
+      assert.equal(uut.UTXOsFromPaperWallet.tokenUTXOs.length, limit)
     })
   })
 })
