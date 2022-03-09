@@ -24,8 +24,7 @@ class Sweeper {
   constructor (
     wifFromPaperWallet,
     wifFromReceiver,
-    bchWrapper,
-    donation = 2000,
+    bchWrapper, donation = 2000,
     toAddr
   ) {
     this.donation = donation
@@ -81,27 +80,37 @@ class Sweeper {
       this.BCHBalanceFromReceiver = await this.blockchain.getBalanceForCashAddr(
         this.receiver.bchAddr
       )
-      const utxosFromReceiver = await this.blockchain.getUtxos(
-        this.receiver.bchAddr
-      )
-      const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch(
-        utxosFromReceiver
-      )
+      // const utxosFromReceiver = await this.blockchain.getUtxos(
+      //   this.receiver.bchAddr
+      // )
+      // console.log(`utxosFromReceiver: ${JSON.stringify(utxosFromReceiver, null, 2)}`)
+      // const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch(
+      //   utxosFromReceiver
+      // )
+      // console.log(`filteredUtxosFromReceiver: ${JSON.stringify(filteredUtxosFromReceiver, null, 2)}`)
+
+      const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch2(this.receiver.bchAddr)
+      console.log(`filteredUtxosFromReceiver: ${JSON.stringify(filteredUtxosFromReceiver, null, 2)}`)
 
       // Get the balance and UTXOs from the paper wallet.
       this.BCHBalanceFromPaperWallet = await this.blockchain.getBalanceForCashAddr(
         this.paper.bchAddr
       )
-      const utxosFromPaperWallet = await this.blockchain.getUtxos(
-        this.paper.bchAddr
-      )
-      const firstTokenUtxosFromPaperWallet = utxosFromPaperWallet.slice(
-        0,
-        this.limitOfTokenUtxos
-      )
-      const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch(
-        firstTokenUtxosFromPaperWallet
-      )
+      // const utxosFromPaperWallet = await this.blockchain.getUtxos(
+      //   this.paper.bchAddr
+      // )
+      // const firstTokenUtxosFromPaperWallet = utxosFromPaperWallet.slice(
+      //   0,
+      //   this.limitOfTokenUtxos
+      // )
+      // console.log(`firstTokenUtxosFromPaperWallet: ${JSON.stringify(firstTokenUtxosFromPaperWallet, null, 2)}`)
+      // const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch(
+      //   firstTokenUtxosFromPaperWallet
+      // )
+      // console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
+
+      const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch2(this.paper.bchAddr)
+      console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
 
       // Set a bunch of values in the instance?
       this.UTXOsFromReceiver = {}
@@ -203,8 +212,7 @@ class Sweeper {
       // Ignore minting batons.
       const selectedTokenId = tokenIds[0]
       const selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
-        (elem) =>
-          elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
+        (elem) => elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
       )
       // console.log(`selectedTokenUtxos: ${JSON.stringify(selectedTokenUtxos, null, 2)}`)
 

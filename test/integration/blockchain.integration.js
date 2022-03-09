@@ -41,21 +41,31 @@ describe('#blockchain', () => {
       const utxos = [
         {
           height: 654089,
-          tx_hash:
-            'c5f82fdb0fc15fe5b002b9b96ec1ac7dbf38e838d07cea8e17ed54f8cbec6868',
+          tx_hash: 'c5f82fdb0fc15fe5b002b9b96ec1ac7dbf38e838d07cea8e17ed54f8cbec6868',
           tx_pos: 1,
           value: 546
         },
         {
           height: 654089,
-          tx_hash:
-            'c5f82fdb0fc15fe5b002b9b96ec1ac7dbf38e838d07cea8e17ed54f8cbec6868',
+          tx_hash: 'c5f82fdb0fc15fe5b002b9b96ec1ac7dbf38e838d07cea8e17ed54f8cbec6868',
           tx_pos: 2,
           value: 9561
         }
       ]
 
       const result = await uut.filterUtxosByTokenAndBch(utxos)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.property(result, 'tokenUTXOs')
+      assert.property(result, 'bchUTXOs')
+    })
+  })
+
+  describe('#filterUtxosByTokenAndBch2', () => {
+    it('should get filtered UTXOs for an address', async () => {
+      const address = 'bitcoincash:qpq6u6fh940npvsk5kqaqxlpgtkyxkknk50z9ws3ke'
+
+      const result = await uut.filterUtxosByTokenAndBch2(address)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.property(result, 'tokenUTXOs')

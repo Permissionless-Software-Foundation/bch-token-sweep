@@ -131,6 +131,7 @@ describe('#blockchain', () => {
       assert.property(result, 'tokenUTXOs')
       assert.property(result, 'bchUTXOs')
     })
+
     it('should return empty Slp and Bch Utxos on empty input', async () => {
       const result = await uut.filterUtxosByTokenAndBch([])
 
@@ -150,6 +151,35 @@ describe('#blockchain', () => {
         assert.equal(true, false, 'Unexpected result')
       } catch (err) {
         assert.include(err.message, 'ould not get details of UTXOs')
+      }
+    })
+  })
+
+  describe('#filterUtxosByTokenAndBch2', () => {
+    it('should hydrate and filter UTXOs', async () => {
+      // Mock dependencies
+      sandbox.stub(uut.bchjs.Utxo, 'get').resolves(mockData.mockUtxoGetOut01)
+
+      const result = await uut.filterUtxosByTokenAndBch2('fake-addr')
+      // console.log('result: ', result)
+
+      assert.property(result, 'tokenUTXOs')
+      assert.property(result, 'bchUTXOs')
+
+      assert.isAbove(result.tokenUTXOs.length, 0)
+      assert.isAbove(result.bchUTXOs.length, 0)
+    })
+
+    it('should handle and throw an error', async () => {
+      try {
+        // Force an error.
+        sandbox.stub(uut.bchjs.Utxo, 'get').rejects(new Error('test error'))
+
+        await uut.filterUtxosByTokenAndBch2('fake-addr')
+
+        assert.fail('Unexpected code path')
+      } catch (err) {
+        assert.include(err.message, 'test error')
       }
     })
   })
