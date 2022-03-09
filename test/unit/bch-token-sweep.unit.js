@@ -109,15 +109,17 @@ describe('#index.js', () => {
         mockData.filteredUtxosFromPaperWallet.bchUTXOs
       )
     })
-    it('should limit utxos from paper wallet', async () => {
-      // Mock the function that make network calls.
-      mockWithLimiter()
-      uut.limitOfTokenUtxos = 0
-      await uut.populateObjectFromNetwork()
-      // console.log('uut: ', uut)
 
-      assert.equal(uut.UTXOsFromPaperWallet.tokenUTXOs.length, 0)
-    })
+    // it('should limit utxos from paper wallet', async () => {
+    //   // Mock the function that make network calls.
+    //   mockWithLimiter()
+    //   uut.limitOfTokenUtxos = 0
+    //   await uut.populateObjectFromNetwork()
+    //   // console.log('uut: ', uut)
+    //
+    //   assert.equal(uut.UTXOsFromPaperWallet.tokenUTXOs.length, 0)
+    // })
+
     it('should handle and throw an error', async () => {
       try {
         sandbox
@@ -401,27 +403,35 @@ function mockUtxos () {
     // The paper wallet.
     .onCall(1)
     .resolves(mockData.filteredUtxosFromPaperWallet)
-}
-function mockWithLimiter () {
-  sandbox
-    .stub(uut.blockchain, 'getBalanceForCashAddr')
+  sandbox.stub(uut.blockchain, 'filterUtxosByTokenAndBch2')
     // The reciever wallet.
     .onCall(0)
-    .resolves(10000)
+    .resolves(mockData.filteredUtxosFromReceiver)
     // The paper wallet.
     .onCall(1)
-    .resolves(546)
-  sandbox
-    .stub(uut.blockchain, 'getUtxos')
-    // The reciever wallet.
-    .onCall(0)
-    .resolves(mockData.utxosFromReceiver)
-    // The paper wallet.
-    .onCall(1)
-    .resolves(mockData.utxosFromPaperWallet)
-  sandbox
-    .stub(uut.blockchain.bchjs.SLP.Utils, 'hydrateUtxos')
-    // The reciever wallet.
-    .onCall(0)
-    .resolves({ slpUtxos: [{ utxos: mockData.mockTwoTokenUtxos }] })
+    .resolves(mockData.filteredUtxosFromPaperWallet)
 }
+
+// function mockWithLimiter () {
+//   sandbox
+//     .stub(uut.blockchain, 'getBalanceForCashAddr')
+//     // The reciever wallet.
+//     .onCall(0)
+//     .resolves(10000)
+//     // The paper wallet.
+//     .onCall(1)
+//     .resolves(546)
+//   sandbox
+//     .stub(uut.blockchain, 'getUtxos')
+//     // The reciever wallet.
+//     .onCall(0)
+//     .resolves(mockData.utxosFromReceiver)
+//     // The paper wallet.
+//     .onCall(1)
+//     .resolves(mockData.utxosFromPaperWallet)
+//   sandbox
+//     .stub(uut.blockchain.bchjs.SLP.Utils, 'hydrateUtxos')
+//     // The reciever wallet.
+//     .onCall(0)
+//     .resolves({ slpUtxos: [{ utxos: mockData.mockTwoTokenUtxos }] })
+// }
