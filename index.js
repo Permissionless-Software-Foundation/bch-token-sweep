@@ -24,7 +24,7 @@ class Sweeper {
   constructor (
     wifFromPaperWallet,
     wifFromReceiver,
-    bchWrapper, donation = 2000,
+    bchWrapper, donation = 2000 ,
     toAddr
   ) {
     this.donation = donation
@@ -90,7 +90,7 @@ class Sweeper {
       // console.log(`filteredUtxosFromReceiver: ${JSON.stringify(filteredUtxosFromReceiver, null, 2)}`)
 
       const filteredUtxosFromReceiver = await this.blockchain.filterUtxosByTokenAndBch2(this.receiver.bchAddr)
-      console.log(`filteredUtxosFromReceiver: ${JSON.stringify(filteredUtxosFromReceiver, null, 2)}`)
+      // console.log(`filteredUtxosFromReceiver: ${JSON.stringify(filteredUtxosFromReceiver, null, 2)}`)
 
       // Get the balance and UTXOs from the paper wallet.
       this.BCHBalanceFromPaperWallet = await this.blockchain.getBalanceForCashAddr(
@@ -110,7 +110,7 @@ class Sweeper {
       // console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
 
       const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch2(this.paper.bchAddr)
-      console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
+      // console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
 
       // Set a bunch of values in the instance?
       this.UTXOsFromReceiver = {}
