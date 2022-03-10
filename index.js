@@ -24,7 +24,7 @@ class Sweeper {
   constructor (
     wifFromPaperWallet,
     wifFromReceiver,
-    bchWrapper, donation = 2000 ,
+    bchWrapper, donation = 2000,
     toAddr
   ) {
     this.donation = donation
