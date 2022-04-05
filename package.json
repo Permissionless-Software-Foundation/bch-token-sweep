@@ -76,6 +76,6 @@
     }
   },
   "peerDependencies": {
-    "minimal-slp-wallet": "../minimal-slp-wallet/"
+    "minimal-slp-wallet": "4.5.x"
   }
 }
