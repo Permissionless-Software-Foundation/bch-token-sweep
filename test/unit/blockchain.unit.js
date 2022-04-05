@@ -1,10 +1,11 @@
 // npm libraries
 const assert = require('chai').assert
 const sinon = require('sinon')
-const BCHJS = require('@psf/bch-js')
+// const wallet = require('@psf/bch-js')
+const Wallet = require('minimal-slp-wallet/index')
 
 // Locally global variables.
-const bchjs = new BCHJS()
+// const wallet = new wallet()
 const mockDataLib = require('./mocks/blockchain-mocks')
 let mockData
 let sandbox
@@ -13,9 +14,17 @@ let sandbox
 const Blockchain = require('../../lib/blockchain')
 let uut
 
+const advancedOptions = {
+  noUpdate: true,
+  interface: 'consumer-api'
+}
+const wallet = new Wallet(undefined, advancedOptions)
+
 describe('#blockchain', () => {
-  beforeEach(() => {
-    const config = { bchjs }
+  beforeEach(async () => {
+    await wallet.walletInfoPromise
+
+    const config = { wallet }
     uut = new Blockchain(config)
 
     mockData = Object.assign({}, mockDataLib)
@@ -27,7 +36,7 @@ describe('#blockchain', () => {
 
   describe('#constructor', () => {
     it('should instantiate the class', () => {
-      const config = { bchjs }
+      const config = { wallet }
       uut = new Blockchain(config)
 
       assert.property(uut, 'config')
@@ -35,7 +44,7 @@ describe('#blockchain', () => {
 
     it('should accept an instance of bch-js', () => {
       const config = {
-        bchjs: bchjs
+        wallet: wallet
       }
 
       uut = new Blockchain(config)
@@ -60,9 +69,10 @@ describe('#blockchain', () => {
   describe('#getBalanceForCashAddr', () => {
     it('should get a balance for an address', async () => {
       // Mock live network calls.
-      sandbox
-        .stub(uut.bchjs.Electrumx, 'balance')
-        .resolves(mockData.mockBalance)
+      // sandbox
+      //   .stub(uut.wallet.Electrumx, 'balance')
+      //   .resolves(mockData.mockBalance)
+      sandbox.stub(uut.wallet, 'getBalance').resolves(1600)
 
       const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
 
@@ -75,7 +85,7 @@ describe('#blockchain', () => {
     it('should handle and throw an error', async () => {
       try {
         // Force an error.
-        sandbox.stub(uut.bchjs.Electrumx, 'balance').rejects('test error')
+        sandbox.stub(uut.wallet, 'getBalance').rejects('test error')
 
         const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
 
@@ -88,77 +98,41 @@ describe('#blockchain', () => {
     })
   })
 
-  describe('#getUtxos', () => {
-    it('should get utxos for an address', async () => {
-      // Mock live network calls.
-      sandbox
-        .stub(uut.bchjs.Electrumx, 'utxo')
-        .resolves({ utxos: mockData.mockUtxos })
-
-      const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
-
-      const result = await uut.getUtxos(addr)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      assert.isArray(result)
-    })
-
-    it('should handle and throw an error', async () => {
-      try {
-        // Force an error.
-        sandbox.stub(uut.bchjs.Electrumx, 'utxo').rejects('test error')
-
-        const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
-
-        await uut.getUtxos(addr)
-
-        assert.equal(true, false, 'Unexpected result')
-      } catch (err) {
-        assert.include(err.message, 'Could not get UTXOs')
-      }
-    })
-  })
-
-  describe('#filterUtxosByTokenAndBch', () => {
-    it('should hydrate and filter UTXOs', async () => {
-      // Mock live network calls.
-      sandbox
-        .stub(uut.bchjs.SLP.Utils, 'hydrateUtxos')
-        .resolves(mockData.mockUtxosWithTokenDetails)
-
-      const result = await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
-
-      assert.property(result, 'tokenUTXOs')
-      assert.property(result, 'bchUTXOs')
-    })
-
-    it('should return empty Slp and Bch Utxos on empty input', async () => {
-      const result = await uut.filterUtxosByTokenAndBch([])
-
-      assert.property(result, 'tokenUTXOs')
-      assert.property(result, 'bchUTXOs')
-      assert.equal(result.tokenUTXOs.length, 0)
-      assert.equal(result.bchUTXOs.length, 0)
-    })
-
-    it('should handle and throw an error', async () => {
-      try {
-        // Force an error.
-        sandbox.stub(uut.bchjs.SLP.Utils, 'hydrateUtxos').rejects('test error')
-
-        await uut.filterUtxosByTokenAndBch(mockData.mockUtxos)
-
-        assert.equal(true, false, 'Unexpected result')
-      } catch (err) {
-        assert.include(err.message, 'ould not get details of UTXOs')
-      }
-    })
-  })
+  // describe('#getUtxos', () => {
+  //   it('should get utxos for an address', async () => {
+  //     // Mock live network calls.
+  //     sandbox
+  //       .stub(uut.wallet.Electrumx, 'utxo')
+  //       .resolves({ utxos: mockData.mockUtxos })
+  //
+  //     const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+  //
+  //     const result = await uut.getUtxos(addr)
+  //     // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+  //
+  //     assert.isArray(result)
+  //   })
+  //
+  //   it('should handle and throw an error', async () => {
+  //     try {
+  //       // Force an error.
+  //       sandbox.stub(uut.wallet.Electrumx, 'utxo').rejects('test error')
+  //
+  //       const addr = 'bitcoincash:qz726wyev5tk9d6vm23d5m4mrg92w4ke75dgkpne2j'
+  //
+  //       await uut.getUtxos(addr)
+  //
+  //       assert.equal(true, false, 'Unexpected result')
+  //     } catch (err) {
+  //       assert.include(err.message, 'Could not get UTXOs')
+  //     }
+  //   })
+  // })
 
   describe('#filterUtxosByTokenAndBch2', () => {
     it('should hydrate and filter UTXOs', async () => {
       // Mock dependencies
-      sandbox.stub(uut.bchjs.Utxo, 'get').resolves(mockData.mockUtxoGetOut01)
+      sandbox.stub(uut.wallet, 'getUtxos').resolves(mockData.mockUtxoGetOut02)
 
       const result = await uut.filterUtxosByTokenAndBch2('fake-addr')
       // console.log('result: ', result)
@@ -166,14 +140,14 @@ describe('#blockchain', () => {
       assert.property(result, 'tokenUTXOs')
       assert.property(result, 'bchUTXOs')
 
-      assert.isAbove(result.tokenUTXOs.length, 0)
-      assert.isAbove(result.bchUTXOs.length, 0)
+      assert.equal(result.tokenUTXOs.length, 0)
+      assert.equal(result.bchUTXOs.length, 2)
     })
 
     it('should handle and throw an error', async () => {
       try {
         // Force an error.
-        sandbox.stub(uut.bchjs.Utxo, 'get').rejects(new Error('test error'))
+        sandbox.stub(uut.wallet, 'getUtxos').rejects(new Error('test error'))
 
         await uut.filterUtxosByTokenAndBch2('fake-addr')
 
@@ -188,7 +162,7 @@ describe('#blockchain', () => {
     it('should return a txid', async () => {
       // Mock live network calls.
       sandbox
-        .stub(uut.bchjs.RawTransactions, 'sendRawTransaction')
+        .stub(uut.wallet.ar, 'sendTx')
         .resolves('txid')
 
       const result = await uut.broadcast('mock hex')

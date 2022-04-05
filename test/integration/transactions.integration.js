@@ -8,19 +8,28 @@
 // npm libraries
 const assert = require('chai').assert
 // const { mockSingleSweepWithBch } = require('../unit/mocks/util-mocks')
-const BCHJS = require('@psf/bch-js')
-const bchjs = new BCHJS()
-// Locally global variables.
+// const BCHJS = require('@psf/bch-js')
+// const bchjs = new BCHJS()
+const Wallet = require('minimal-slp-wallet/index')
+
+const advancedOptions = {
+  noUpdate: true,
+  interface: 'consumer-api'
+}
+const wallet = new Wallet(undefined, advancedOptions)
 
 const Blockchain = require('../../lib/blockchain')
-const blockchain = new Blockchain({ bchjs })
+const blockchain = new Blockchain({ wallet })
 
 // Unit under test
 const TransactionslLib = require('../../lib/transactions')
 let uut
 
-const receiverWif = 'L3nSksvTtHHBRP3HNMDhy6hDKpu88PQvrLGzLJn3FYX2diKqC1GD'
-const paperWif = 'KxtteuKQ2enad5jH2o5eGkSaTgas49kWmvADW6qqhLAURrxuUo7m'
+// bitcoincash:qr0lcfnvsc5m4fqznazvvmm905s8dhwakytl725943
+const receiverWif = 'KwMkZ4odtbBzRKdEjYBUMgx7CE6wYxVb7b2N4V7QYa5gaGhmZMug'
+
+// bitcoincash:qr4yscpw9jgq8ltajfeknpj32kamkf9knujffcdhyq
+const paperWif = 'L5nkYNwao1UFCJfKrk7Uh1MSRPyyectSbTcXDBdKvV9rTpuUUPGi'
 
 describe('#transactions.js', () => {
   beforeEach(async () => {
@@ -28,7 +37,7 @@ describe('#transactions.js', () => {
     const config = {
       paperWif,
       receiverWif,
-      bchjs
+      wallet
     }
     uut = new TransactionslLib(config)
   })
@@ -36,13 +45,9 @@ describe('#transactions.js', () => {
   describe('#buildSweepSingleTokenWithBchFromPaper', () => {
     it('should generate a transaction', async () => {
       const addr = uut.paper.bchAddr
-      // console.log(`addr: ${addr}`)
 
-      const utxos = await blockchain.getUtxos(addr)
-      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
-
-      const hydratedUtxos = await blockchain.filterUtxosByTokenAndBch(utxos)
-      console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
+      const hydratedUtxos = await blockchain.filterUtxosByTokenAndBch2(addr)
+      // console.log(`hydatedUtxos: ${JSON.stringify(hydratedUtxos, null, 2)}`)
 
       const hex = uut.buildSweepSingleTokenWithBchFromPaper(
         hydratedUtxos.tokenUTXOs,
@@ -57,29 +62,29 @@ describe('#transactions.js', () => {
 
   describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
     it('should generate a transaction', async () => {
-      const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
+      // const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
       // console.log(`paperUtxos: ${JSON.stringify(paperUtxos, null, 2)}`)
 
-      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
-        paperUtxos
+      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch2(
+        uut.paper.bchAddr
       )
-      console.log(
-        `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
-      )
+      // console.log(
+      //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
+      // )
 
-      const receiverUtxos = await blockchain.getUtxos(uut.receiver.bchAddr)
+      // const receiverUtxos = await blockchain.getUtxos(uut.receiver.bchAddr)
       // console.log(`receiverUtxos: ${JSON.stringify(receiverUtxos, null, 2)}`)
 
-      const receiverHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
-        receiverUtxos
+      const receiverHydratedUtxos = await blockchain.filterUtxosByTokenAndBch2(
+        uut.receiver.bchAddr
       )
-      console.log(
-        `receiverHydratedUtxos: ${JSON.stringify(
-          receiverHydratedUtxos,
-          null,
-          2
-        )}`
-      )
+      // console.log(
+      //   `receiverHydratedUtxos: ${JSON.stringify(
+      //     receiverHydratedUtxos,
+      //     null,
+      //     2
+      //   )}`
+      // )
 
       const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
         paperHydratedUtxos.tokenUTXOs,
@@ -94,11 +99,11 @@ describe('#transactions.js', () => {
 
   describe('#buildSweepOnlyBchFromPaper', () => {
     it('should generate a transaction', async () => {
-      const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
+      // const paperUtxos = await blockchain.getUtxos(uut.paper.bchAddr)
       // console.log(`paperUtxos: ${JSON.stringify(paperUtxos, null, 2)}`)
 
-      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch(
-        paperUtxos
+      const paperHydratedUtxos = await blockchain.filterUtxosByTokenAndBch2(
+        uut.paper.bchAddr
       )
       // console.log(
       //   `paperHydratedUtxos: ${JSON.stringify(paperHydratedUtxos, null, 2)}`
