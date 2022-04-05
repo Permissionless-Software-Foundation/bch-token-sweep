@@ -6,7 +6,8 @@
 const assert = require('chai').assert
 const sinon = require('sinon')
 const cloneDeep = require('lodash.clonedeep')
-const BCHJS = require('@psf/bch-js')
+// const BCHJS = require('@psf/bch-js')
+const Wallet = require('minimal-slp-wallet/index')
 
 // Local libraries
 const SweeperLib = require('../../index.js')
@@ -15,7 +16,13 @@ const mockDataLib = require('./mocks/bch-token-sweep-mocks.js')
 let sandbox
 let uut
 let mockData
-const bchjs = new BCHJS()
+// const bchjs = new BCHJS()
+
+const advancedOptions = {
+  noUpdate: true,
+  interface: 'consumer-api'
+}
+const wallet = new Wallet(undefined, advancedOptions)
 
 describe('#index.js', () => {
   // Wallets used for testing.
@@ -28,14 +35,14 @@ describe('#index.js', () => {
 
     mockData = cloneDeep(mockDataLib)
 
-    uut = new SweeperLib(paperWIF, receiverWIF, bchjs)
+    uut = new SweeperLib(paperWIF, receiverWIF, wallet)
   })
 
   afterEach(() => sandbox.restore())
 
   describe('#constructor', () => {
     it('should instantiate the sweep library', () => {
-      uut = new SweeperLib(paperWIF, receiverWIF, bchjs)
+      uut = new SweeperLib(paperWIF, receiverWIF, wallet)
 
       assert.property(uut.paper, 'wif')
       assert.property(uut.paper, 'ecPair')
@@ -48,20 +55,20 @@ describe('#index.js', () => {
       assert.property(uut.receiver, 'slpAddr')
     })
 
-    it('should throw an error if bchjs is not included', () => {
+    it('should throw an error if wallet is not included', () => {
       try {
         uut = new SweeperLib()
       } catch (err) {
         assert.include(
           err.message,
-          'bch-js instance must be passed when instantiating.'
+          'minimal-slp-wallet instance must be passed when instantiating.'
         )
       }
     })
 
     it('should throw an error if paper wallet wif is not included', () => {
       try {
-        uut = new SweeperLib(undefined, undefined, bchjs)
+        uut = new SweeperLib(undefined, undefined, wallet)
       } catch (err) {
         assert.include(err.message, 'WIF from paper wallet is required')
       }
@@ -69,7 +76,7 @@ describe('#index.js', () => {
 
     it('should throw an error if receiver wallet wif is not included', () => {
       try {
-        uut = new SweeperLib(paperWIF, undefined, bchjs)
+        uut = new SweeperLib(paperWIF, undefined, wallet)
       } catch (err) {
         assert.include(err.message, 'WIF from receiver is required')
       }
@@ -78,7 +85,7 @@ describe('#index.js', () => {
     it('should instantiate with a to-address', () => {
       const toAddr = 'bitcoincash:qpqug5fmpgm0mpc4hep3cu3tm7fr7yvnjcwlq46dvk'
 
-      uut = new SweeperLib(paperWIF, receiverWIF, bchjs, 2000, toAddr)
+      uut = new SweeperLib(paperWIF, receiverWIF, wallet, 2000, toAddr)
 
       assert.equal(uut.toAddr, toAddr)
     })
@@ -387,22 +394,14 @@ function mockUtxos () {
     // The paper wallet.
     .onCall(1)
     .resolves(546)
-  sandbox
-    .stub(uut.blockchain, 'getUtxos')
-    // The reciever wallet.
-    .onCall(0)
-    .resolves(mockData.utxosFromReceiver)
-    // The paper wallet.
-    .onCall(1)
-    .resolves(mockData.utxosFromPaperWallet)
-  sandbox
-    .stub(uut.blockchain, 'filterUtxosByTokenAndBch')
-    // The reciever wallet.
-    .onCall(0)
-    .resolves(mockData.filteredUtxosFromReceiver)
-    // The paper wallet.
-    .onCall(1)
-    .resolves(mockData.filteredUtxosFromPaperWallet)
+  // sandbox
+  //   .stub(uut.blockchain, 'getUtxos')
+  //   // The reciever wallet.
+  //   .onCall(0)
+  //   .resolves(mockData.utxosFromReceiver)
+  //   // The paper wallet.
+  //   .onCall(1)
+  //   .resolves(mockData.utxosFromPaperWallet)
   sandbox.stub(uut.blockchain, 'filterUtxosByTokenAndBch2')
     // The reciever wallet.
     .onCall(0)

@@ -7,14 +7,21 @@
 
 // npm libraries
 const assert = require('chai').assert
-const BCHJS = require('@psf/bch-js')
+// const BCHJS = require('@psf/bch-js')
 const sinon = require('sinon')
+const Wallet = require('minimal-slp-wallet/index')
 
 // Locally global variables.
-const bchjs = new BCHJS()
+// const bchjs = new BCHJS()
 let sandbox
 let mockData
 let uut
+
+const advancedOptions = {
+  noUpdate: true,
+  interface: 'consumer-api'
+}
+const wallet = new Wallet(undefined, advancedOptions)
 
 // Mocking data.
 const mockDataLib = require('../unit/mocks/transactions-mocks')
@@ -34,7 +41,7 @@ describe('#transactions.js', () => {
     const config = {
       paperWif,
       receiverWif,
-      bchjs
+      wallet
     }
     uut = new TransactionsLib(config)
   })
@@ -44,7 +51,7 @@ describe('#transactions.js', () => {
   describe('#constructor', () => {
     it('should throw an error if paper wallet wif is not included', () => {
       try {
-        const config = { bchjs }
+        const config = { wallet }
         uut = new TransactionsLib(config)
       } catch (err) {
         assert.include(err.message, 'wif for paper wallet required')
@@ -53,7 +60,7 @@ describe('#transactions.js', () => {
 
     it('should throw an error if receiver wallet wif is not included', () => {
       try {
-        const config = { paperWif, bchjs }
+        const config = { paperWif, wallet }
         uut = new TransactionsLib(config)
       } catch (err) {
         assert.include(err.message, 'wif for receiver wallet required')
@@ -62,7 +69,7 @@ describe('#transactions.js', () => {
 
     it('should accept an instance of bch-js', () => {
       const config = {
-        bchjs,
+        wallet,
         paperWif,
         receiverWif
       }
@@ -110,7 +117,7 @@ describe('#transactions.js', () => {
       try {
         // Force an error.
         sandbox
-          .stub(uut.bchjs, 'TransactionBuilder')
+          .stub(uut.wallet.bchjs, 'TransactionBuilder')
           .throws(new Error('test error'))
 
         uut.buildSweepSingleTokenWithBchFromPaper(
@@ -169,7 +176,7 @@ describe('#transactions.js', () => {
       try {
         // Force an error.
         sandbox
-          .stub(uut.bchjs, 'TransactionBuilder')
+          .stub(uut.wallet.bchjs, 'TransactionBuilder')
           .throws(new Error('test error'))
 
         uut.buildSweepSingleTokenWithoutBchFromPaper(
@@ -227,7 +234,7 @@ describe('#transactions.js', () => {
       try {
         // Force an error.
         sandbox
-          .stub(uut.bchjs, 'TransactionBuilder')
+          .stub(uut.wallet.bchjs, 'TransactionBuilder')
           .throws(new Error('test error'))
 
         uut.buildSweepOnlyBchFromPaper(mockData.mockPaperHydratedUtxos.bchUTXOs)
