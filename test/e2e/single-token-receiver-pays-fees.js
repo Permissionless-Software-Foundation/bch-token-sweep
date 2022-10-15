@@ -7,19 +7,31 @@
 */
 
 // These are the WIF (private keys) used to operate the test.
-const paperWif = 'L3oM4q4tNUZkT3gHZJkw4Rt6nYWveUNeZZudG82zLJVmaauRAgkj'
-const receiverWif = 'KzSwx57BYjZEekjGPH9sWpivShkqgGxV41zmkNYbCEgxdwPzhKJo'
+// const paperWif = 'L3oM4q4tNUZkT3gHZJkw4Rt6nYWveUNeZZudG82zLJVmaauRAgkj'
+// const receiverWif = 'KzSwx57BYjZEekjGPH9sWpivShkqgGxV41zmkNYbCEgxdwPzhKJo'
 
-const BCHJS = require('@psf/bch-js')
-const bchjs = new BCHJS()
+const paperWif = 'KxCUHjDY5jdyw9STQCrWfwg1Qka6CRam84wiXfiytMMPsV977DqQ'
+// paperWif BCH address: bitcoincash:qzyntrfz75n2t4e6mm4k44nv97qqzt5t2y9ycv3nen
+// paperWif SLP address: simpleledger:qzyntrfz75n2t4e6mm4k44nv97qqzt5t2yflnhyn8d
+const receiverWif = 'L2uMNgBUWmu2hFhCAYhpvDdbQGxmSF4Ud5J8KiaDR7E8ojLrpL8b'
+// receiverWif BCH address: bitcoincash:qr72xs9e9u6k06ysxc8u2n683j8edtzf9u2x37wljt
+// receiverWif SLP address: simpleledger:qr72xs9e9u6k06ysxc8u2n683j8edtzf9uxa69mlv4
+
+// const BCHJS = require('@psf/bch-js')
+// const bchjs = new BCHJS()
+const SlpWallet = require('minimal-slp-wallet')
 
 // Unit under test
 const SweeperLib = require('../../index')
 
 async function runTest () {
   try {
+    const wallet = new SlpWallet(receiverWif)
+    await wallet.walletInfoPromise
+    await wallet.initialize()
+
     // Instancing the library
-    const sweeperLib = new SweeperLib(paperWif, receiverWif, bchjs)
+    const sweeperLib = new SweeperLib(paperWif, receiverWif, wallet)
     await sweeperLib.populateObjectFromNetwork()
 
     await checkSetup(sweeperLib)
@@ -72,7 +84,7 @@ async function checkSetup (sweeperLib) {
   //     2
   //   )}`
   // )
-  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length === 0) {
+  if (sweeperLib.UTXOsFromPaperWallet.tokenUTXOs.length === 0 && sweeperLib.UTXOsFromPaperWallet.nftUTXOs.length === 0) {
     throw new Error(
       `Paper wallet does not have any tokens! Send some SLP tokens to ${
         sweeperLib.paper.slpAddr

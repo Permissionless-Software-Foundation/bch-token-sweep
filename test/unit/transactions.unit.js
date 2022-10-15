@@ -9,7 +9,7 @@
 const assert = require('chai').assert
 // const BCHJS = require('@psf/bch-js')
 const sinon = require('sinon')
-const Wallet = require('minimal-slp-wallet/index')
+const Wallet = require('minimal-slp-wallet')
 
 // Locally global variables.
 // const bchjs = new BCHJS()
@@ -163,6 +163,18 @@ describe('#transactions.js', () => {
 
   describe('#buildSweepSingleTokenWithoutBchFromPaper', () => {
     it('should match the expected hex for sucessful transaction', async () => {
+      const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
+        mockData.mockPaperHydratedUtxos.tokenUTXOs,
+        mockData.mockReceiverHydratedUtxos.bchUTXOs
+      )
+
+      // The function should return a hex string.
+      assert.isString(hex)
+    })
+
+    it('should generate TX for NFT', async () => {
+      mockData.mockPaperHydratedUtxos.tokenUTXOs[0].tokenType = 65
+
       const hex = uut.buildSweepSingleTokenWithoutBchFromPaper(
         mockData.mockPaperHydratedUtxos.tokenUTXOs,
         mockData.mockReceiverHydratedUtxos.bchUTXOs

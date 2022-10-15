@@ -170,7 +170,30 @@ const mockUtxoGetOut02 = {
   ],
   slpUtxos: {
     type1: {
-      tokens: [],
+      tokens: [
+        {
+          height: 648591,
+          tx_hash:
+            'f0e373d5ecba4c5fc1bca2e931e6d5d7228dd69e718db9ab3bd6e34dab1dd8ce',
+          tx_pos: 1,
+          value: 546,
+          satoshis: 546,
+          txid: 'f0e373d5ecba4c5fc1bca2e931e6d5d7228dd69e718db9ab3bd6e34dab1dd8ce',
+          vout: 1,
+          utxoType: 'token',
+          transactionType: 'send',
+          tokenId:
+            '716daf7baf2f1c517e52a3f6ffd6f734d45eab20e87dc1c79108c5f0f6804888',
+          tokenTicker: 'ALCIPIR',
+          tokenName: 'A L C P R',
+          tokenDocumentUrl: 'mint.bitcoin.com',
+          tokenDocumentHash: '',
+          decimals: 4,
+          tokenType: 1,
+          tokenQty: 9482,
+          isValid: true
+        }
+      ],
       mintBatons: []
     },
     nft: {}

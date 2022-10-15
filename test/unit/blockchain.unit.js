@@ -2,7 +2,7 @@
 const assert = require('chai').assert
 const sinon = require('sinon')
 // const wallet = require('@psf/bch-js')
-const Wallet = require('minimal-slp-wallet/index')
+const Wallet = require('minimal-slp-wallet')
 
 // Locally global variables.
 // const wallet = new wallet()
@@ -140,7 +140,7 @@ describe('#blockchain', () => {
       assert.property(result, 'tokenUTXOs')
       assert.property(result, 'bchUTXOs')
 
-      assert.equal(result.tokenUTXOs.length, 0)
+      assert.equal(result.tokenUTXOs.length, 1)
       assert.equal(result.bchUTXOs.length, 2)
     })
 

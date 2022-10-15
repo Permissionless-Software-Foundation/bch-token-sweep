@@ -7,7 +7,7 @@ const assert = require('chai').assert
 const sinon = require('sinon')
 const cloneDeep = require('lodash.clonedeep')
 // const BCHJS = require('@psf/bch-js')
-const Wallet = require('minimal-slp-wallet/index')
+const Wallet = require('minimal-slp-wallet')
 
 // Local libraries
 const SweeperLib = require('../../index.js')
@@ -196,7 +196,7 @@ describe('#index.js', () => {
 
         await uut.sweepTo(uut.receiver.slpAddr)
       } catch (err) {
-        // console.log(err)
+        console.log(err)
         assert.include(err.message, 'No BCH or tokens found on paper wallet')
       }
     })
@@ -257,6 +257,25 @@ describe('#index.js', () => {
 
       // Populate the instance with UTXO data.
       await uut.populateObjectFromNetwork()
+
+      const hex = await uut.sweepTo(uut.receiver.slpAddr)
+
+      assert.isString(hex)
+    })
+
+    it('should generate a token-sweep tx if paper wallet has a single NFT and no BCH', async () => {
+      // Customize mock data for NFT
+      mockData.filteredUtxosFromPaperWallet.nftUTXOs = mockData.filteredUtxosFromPaperWallet.tokenUTXOs
+      mockData.filteredUtxosFromPaperWallet.tokenUTXOs = []
+      // console.log('mockData.filteredUtxosFromPaperWallet: ', mockData.filteredUtxosFromPaperWallet)
+
+      // Mock the function that make network calls.
+      mockUtxos()
+
+      // Populate the instance with UTXO data.
+      await uut.populateObjectFromNetwork()
+
+      uut.UTXOsFromPaperWallet.nftUtxos = mockData.filteredUtxosFromPaperWallet.nftUTXOs
 
       const hex = await uut.sweepTo(uut.receiver.slpAddr)
 
