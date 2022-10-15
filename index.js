@@ -90,7 +90,7 @@ class Sweeper {
       )
 
       const filteredUtxosFromPaperWallet = await this.blockchain.filterUtxosByTokenAndBch2(this.paper.bchAddr)
-      // console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
+      console.log(`filteredUtxosFromPaperWallet: ${JSON.stringify(filteredUtxosFromPaperWallet, null, 2)}`)
 
       // Set a bunch of values in the instance?
       this.UTXOsFromReceiver = {}
@@ -98,6 +98,7 @@ class Sweeper {
       this.UTXOsFromPaperWallet = {}
       this.UTXOsFromPaperWallet.tokenUTXOs =
         filteredUtxosFromPaperWallet.tokenUTXOs
+      this.UTXOsFromPaperWallet.nftUTXOs = filteredUtxosFromPaperWallet.nftUTXOs
       this.UTXOsFromPaperWallet.bchUTXOs = filteredUtxosFromPaperWallet.bchUTXOs
     } catch (e) {
       console.error('Error in populateObjectFromNetwork()')
@@ -133,7 +134,7 @@ class Sweeper {
     }
   }
 
-  // Generates an returns an hex-encoded transaction, ready to be broadcast to
+  // Generates and returns an hex-encoded transaction, ready to be broadcast to
   // the BCH network, for sweeping tokens and/or BCH from a paper wallet.
   async sweepTo (toSLPAddr) {
     // Used for debugging.
@@ -162,7 +163,15 @@ class Sweeper {
       let hex = ''
 
       // Identify the token ID to be swept.
-      const tokenIds = this.getTokenIds(this.UTXOsFromPaperWallet.tokenUTXOs)
+      let tokenIds = this.getTokenIds(this.UTXOsFromPaperWallet.tokenUTXOs)
+      console.log('tokenIds 1: ', tokenIds)
+      console.log('this.UTXOsFromPaperWallet.nftUTXOs: ', this.UTXOsFromPaperWallet.nftUtxos)
+
+      // Check NFT UTXOs if there are no fungible tokens.
+      if (tokenIds.length === 0 && this.UTXOsFromPaperWallet.nftUtxos) {
+        tokenIds = this.getTokenIds(this.UTXOsFromPaperWallet.nftUTXOs)
+      }
+      console.log('tokenIds: ', tokenIds)
 
       // If there are no token UTXOs, then this is a BCH-only sweep.
       if (tokenIds.length === 0) {
@@ -191,10 +200,17 @@ class Sweeper {
       // Filter the token UTXOs for the selected token.
       // Ignore minting batons.
       const selectedTokenId = tokenIds[0]
-      const selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
+      let selectedTokenUtxos = this.UTXOsFromPaperWallet.tokenUTXOs.filter(
         (elem) => elem.tokenId === selectedTokenId && elem.utxoType !== 'minting-baton'
       )
-      // console.log(`selectedTokenUtxos: ${JSON.stringify(selectedTokenUtxos, null, 2)}`)
+
+      // Get NFT UTXOs if there are no fungible token UTXOs.
+      if (!selectedTokenUtxos.length) {
+        selectedTokenUtxos = this.UTXOsFromPaperWallet.nftUTXOs.filter(
+          (elem) => elem.tokenId === selectedTokenId
+        )
+      }
+      console.log(`selectedTokenUtxos: ${JSON.stringify(selectedTokenUtxos, null, 2)}`)
 
       // Calculate the non-token BCH available for spending on the paper wallet.
       const paperSpendableBch = this.blockchain.getNonTokenBch(
@@ -244,7 +260,7 @@ class Sweeper {
 
       return hex
     } catch (err) {
-      console.error('Error in sweepTo()')
+      console.error('Error in sweepTo(): ', err)
       throw err
     }
   }
