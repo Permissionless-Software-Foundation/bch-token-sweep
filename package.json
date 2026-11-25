@@ -78,5 +78,11 @@
   },
   "peerDependencies": {
     "minimal-slp-wallet": ">= 4"
+  },
+  "overrides": {
+    "webpack": "^5.104.0",
+    "minimist": "^1.2.8",
+    "loader-utils": "^2.0.4",
+    "handlebars": "^4.7.8"
   }
 }
